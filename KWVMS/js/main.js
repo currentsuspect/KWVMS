@@ -72,16 +72,19 @@ function renderLoginView() {
     clearContent();
     // Apply Tailwind classes for a modern look
     const loginHtml = `
-        <div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="min-h-screen flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-md w-full space-y-8">
                 <!-- Added Application Title -->
                 <div class="text-center">
-                     <img class="mx-auto h-12 w-auto" src="images/logo_placeholder.png" alt="Logo"> <!-- Optional: Add a logo -->
-                     <h1 class="text-xl font-semibold text-gray-700">Kajiado Water Vending Management System</h1>
+                     <!-- Water Drop Logo SVG from Phosphor Icons -->
+                     <svg class="mx-auto h-10 w-10 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256">
+                         <path d="M174,47.75a256.11,256.11,0,0,0-41.45-38.3,8,8,0,0,0-9.1,0,256.11,256.11,0,0,0-41.45,38.3C61.79,77.42,49.5,123.61,49.51,169.25c0,45.63,17.18,89.44,48.46,121.87A88.45,88.45,0,0,0,128,232a88.45,88.45,0,0,0,30-41.13c31.28-32.43,48.46-76.24,48.46-121.87C206.5,123.61,194.21,77.42,174,47.75ZM128,216a72.49,72.49,0,0,1-23.31-3.93,74.91,74.91,0,0,1-21.41-11.38C77.93,172.17,65,134.21,65,169.25c0-38.52,10.39-75.3,28.47-105.59a240.3,240.3,0,0,1,34.54-31.57,240.3,240.3,0,0,1,34.54,31.57C180.61,94,191,130.73,191,169.25c0-35,0-12.92-18.28,31.44a74.91,74.91,0,0,1-21.41,11.38A72.49,72.49,0,0,1,128,216Z" fill="currentColor"></path>
+                     </svg>
+                     <h1 class="mt-2 text-xl font-semibold text-neutral-700 dark:text-neutral-300">Kajiado Water Vending Management System</h1>
                 </div>
-                <div class="bg-white p-8 rounded-lg shadow-md space-y-6"> 
+                <div class="bg-white dark:bg-neutral-800 p-8 rounded-lg shadow-md space-y-6"> 
                     <div>
-                        <h2 class="text-center text-2xl font-bold text-gray-900">
+                        <h2 class="text-center text-2xl font-bold text-neutral-700 dark:text-neutral-100">
                             Sign in to your account
                         </h2>
                     </div>
@@ -91,30 +94,30 @@ function renderLoginView() {
                             <div>
                                 <label for="login-email" class="sr-only">Email address</label>
                                 <input id="login-email" name="email" type="email" autocomplete="email" required 
-                                       class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                       class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                                        placeholder="Email address">
                             </div>
                             <div>
                                 <label for="login-password" class="sr-only">Password</label>
                                 <input id="login-password" name="password" type="password" autocomplete="current-password" required 
-                                       class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                       class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                                        placeholder="Password">
                             </div>
                         </div>
 
                         <!-- Refined Auth Error Styling -->
-                        <div id="auth-error" class="p-3 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm hidden"></div> 
+                        <div id="auth-error" class="p-3 bg-error-100 dark:bg-error-900 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-200 rounded-md text-sm hidden"></div> 
 
                         <div>
                             <button type="submit" 
-                                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                 Sign in
                             </button>
                         </div>
                     </form>
-                     <p class="text-center text-sm text-gray-600">
+                     <p class="text-center text-sm text-neutral-600 dark:text-neutral-400">
                         Don't have an account? 
-                        <button id="go-to-register" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        <button id="go-to-register" class="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300">
                             Register here
                         </button>
                     </p>
@@ -134,16 +137,19 @@ function renderRegisterView() {
     clearContent();
     // Apply Tailwind classes for a modern look
     const registerHtml = `
-       <div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+       <div class="min-h-screen flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-md w-full space-y-8">
                  <!-- Added Application Title -->
                 <div class="text-center">
-                     <img class="mx-auto h-12 w-auto" src="images/logo_placeholder.png" alt="Logo"> <!-- Optional: Add a logo -->
-                     <h1 class="text-xl font-semibold text-gray-700">Kajiado Water Vending Management System</h1>
+                     <!-- Water Drop Logo SVG from Phosphor Icons -->
+                     <svg class="mx-auto h-10 w-10 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256">
+                         <path d="M174,47.75a256.11,256.11,0,0,0-41.45-38.3,8,8,0,0,0-9.1,0,256.11,256.11,0,0,0-41.45,38.3C61.79,77.42,49.5,123.61,49.51,169.25c0,45.63,17.18,89.44,48.46,121.87A88.45,88.45,0,0,0,128,232a88.45,88.45,0,0,0,30-41.13c31.28-32.43,48.46-76.24,48.46-121.87C206.5,123.61,194.21,77.42,174,47.75ZM128,216a72.49,72.49,0,0,1-23.31-3.93,74.91,74.91,0,0,1-21.41-11.38C77.93,172.17,65,134.21,65,169.25c0-38.52,10.39-75.3,28.47-105.59a240.3,240.3,0,0,1,34.54-31.57,240.3,240.3,0,0,1,34.54,31.57C180.61,94,191,130.73,191,169.25c0-35,0-12.92-18.28,31.44a74.91,74.91,0,0,1-21.41,11.38A72.49,72.49,0,0,1,128,216Z" fill="currentColor"></path>
+                     </svg>
+                     <h1 class="mt-2 text-xl font-semibold text-neutral-700 dark:text-neutral-300">Kajiado Water Vending Management System</h1>
                 </div>
-                <div class="bg-white p-8 rounded-lg shadow-md space-y-6">
+                <div class="bg-white dark:bg-neutral-800 p-8 rounded-lg shadow-md space-y-6">
                     <div>
-                        <h2 class="text-center text-2xl font-bold text-gray-900">
+                        <h2 class="text-center text-2xl font-bold text-neutral-900 dark:text-neutral-100">
                             Create your account
                         </h2>
                     </div>
@@ -152,31 +158,31 @@ function renderRegisterView() {
                             <div>
                                 <label for="register-name" class="sr-only">Full Name</label>
                                 <input id="register-name" name="name" type="text" required 
-                                       class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                       class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                                        placeholder="Full Name">
                             </div>
                              <div>
                                 <label for="register-email" class="sr-only">Email address</label>
                                 <input id="register-email" name="email" type="email" autocomplete="email" required 
-                                       class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                       class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                                        placeholder="Email address">
                             </div>
                              <div>
                                 <label for="register-phone" class="sr-only">Phone Number</label>
                                 <input id="register-phone" name="phone" type="tel" autocomplete="tel" required 
-                                       class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                       class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                                        placeholder="Phone Number">
                             </div>
                             <div>
                                 <label for="register-password" class="sr-only">Password</label>
                                 <input id="register-password" name="password" type="password" autocomplete="new-password" required minlength="6"
-                                       class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                       class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                                        placeholder="Password (min. 6 characters)">
                             </div>
                              <div>
-                                <label for="register-role" class="block text-sm font-medium text-gray-700 mb-1">Register as:</label>
+                                <label for="register-role" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Register as:</label>
                                 <select id="register-role" name="role" required
-                                        class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm">
+                                        class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm">
                                     <option value="user" selected>Water Buyer (User)</option>
                                     <option value="vendor">Water Vendor</option>
                                 </select>
@@ -184,18 +190,18 @@ function renderRegisterView() {
                         </div>
 
                         <!-- Refined Auth Error Styling -->
-                        <div id="auth-error" class="p-3 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm hidden"></div>
+                        <div id="auth-error" class="p-3 bg-error-100 dark:bg-error-900 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-200 rounded-md text-sm hidden"></div>
 
                         <div>
                             <button type="submit" 
-                                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                 Register
                             </button>
                         </div>
                     </form>
-                     <p class="text-center text-sm text-gray-600">
+                     <p class="text-center text-sm text-neutral-600 dark:text-neutral-400">
                         Already have an account? 
-                        <button id="go-to-login" class="font-medium text-indigo-600 hover:text-indigo-500">
+                        <button id="go-to-login" class="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300">
                             Login here
                         </button>
                     </p>
@@ -217,7 +223,7 @@ function renderUserDashboard(user, userData) {
     clearContent();
     // Apply Tailwind classes for a modern user dashboard
     appContent.innerHTML = `
-        <div class="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
             <div class="max-w-4xl mx-auto">
                 <div class="flex justify-end items-center mb-6">
                      <button id="logout-button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -227,15 +233,15 @@ function renderUserDashboard(user, userData) {
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Profile Section -->
-                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 border-b border-gray-200 pb-2 mb-4">My Profile</h3>
-                        <div class="space-y-3 text-sm text-gray-700">
+                    <div class="md:col-span-1 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">My Profile</h3>
+                        <div class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
                             <p><strong>Name:</strong> ${userData.name || 'N/A'}</p>
                             <p><strong>Email:</strong> ${user.email}</p>
                             <p><strong>Phone:</strong> ${userData.phone || 'N/A'}</p>
                             <p><strong>Role:</strong> ${userData.role}</p>
                         </div>
-                        <button id="edit-profile-button" class="mt-4 w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled>
+                        <button id="edit-profile-button" class="mt-4 w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled>
                             Edit Profile (Soon)
                         </button>
                     </div>
@@ -243,19 +249,19 @@ function renderUserDashboard(user, userData) {
                     <!-- Actions & Order History Section -->
                     <div class="md:col-span-2 space-y-6">
                         <!-- Actions Card -->
-                        <div class="bg-white p-6 rounded-lg shadow">
-                             <h3 class="text-lg font-medium leading-6 text-gray-900 border-b border-gray-200 pb-2 mb-4">Actions</h3>
-                            <button id="order-water-button" class="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">Actions</h3>
+                            <button id="order-water-button" class="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 Order Water
                             </button>
                         </div>
 
                         <!-- Order History Card -->
-                        <div class="bg-white p-6 rounded-lg shadow">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900 border-b border-gray-200 pb-2 mb-4">My Order History</h3>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-700 pb-2 mb-4">My Order History</h3>
                             <div id="user-order-list" class="space-y-4">
                                 <!-- Orders will be loaded here -->
-                                <p class="text-gray-500">Loading order history...</p>
+                                <p class="text-gray-500 dark:text-gray-400">Loading order history...</p>
                             </div>
                         </div>
                     </div>
@@ -278,35 +284,65 @@ function renderVendorPanel(user, userData) {
     clearContent();
     // Apply Tailwind classes for a modern vendor panel
     appContent.innerHTML = `
-        <div class="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
+        <div class="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-4 sm:p-6 lg:p-8">
             <div class="max-w-4xl mx-auto">
                  <div class="flex justify-end items-center mb-6">
-                    <button id="logout-button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <button id="logout-button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-error-600 hover:bg-error-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500">
                         Logout
                     </button>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow mb-6">
-                    <h3 class="text-lg font-medium leading-6 text-gray-900 border-b border-gray-200 pb-2 mb-4">Welcome, ${userData.name || user.email}!</h3>
-                    <div class="space-y-3 text-sm text-gray-700">
-                        <p><strong>Role:</strong> ${userData.role}</p>
-                        <p><strong>Your UID:</strong> ${user.uid}</p>
-                        <p><strong>Phone:</strong> ${userData.phone || 'N/A'}</p>
-                         <a href="vendor-dashboard.html" class="mt-5 w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Go to Full Delivery Management
-                         </a>
+                <div class="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow mb-6">
+                    <div class="flex items-center justify-center space-x-3">
+                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+                        <h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-neutral-100">Loading vendor data...</h3>
                     </div>
                 </div>
 
                  <!-- Placeholder Section -->
-                 <div class="bg-white p-6 rounded-lg shadow">
-                     <h3 class="text-lg font-medium leading-6 text-gray-900 border-b border-gray-200 pb-2 mb-4">Quick Info</h3>
-                     <p class="text-gray-500 text-sm">Key information or quick actions might appear here later. For full details, use the button above.</p>
+                 <div class="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow">
+                     <div class="flex items-center justify-center space-x-3">
+                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+                        <h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-neutral-100">Loading quick info...</h3>
+                    </div>
+                 </div>
+            </div>
+        </div>
+    `;
+
+    // Simulate loading delay (remove this in production)
+    setTimeout(() => {
+        appContent.innerHTML = `
+            <div class="min-h-screen bg-neutral-100 dark:bg-neutral-900 p-4 sm:p-6 lg:p-8">
+                <div class="max-w-4xl mx-auto">
+                     <div class="flex justify-end items-center mb-6">
+                        <button id="logout-button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-error-600 hover:bg-error-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500">
+                            Logout
+                        </button>
+                    </div>
+
+                    <div class="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow mb-6">
+                        <h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-neutral-100 border-b border-neutral-200 dark:border-neutral-700 pb-2 mb-4">Welcome, ${userData.name || user.email}!</h3>
+                        <div class="space-y-3 text-sm text-neutral-700 dark:text-neutral-300">
+                            <p><strong>Role:</strong> ${userData.role}</p>
+                            <p><strong>Your UID:</strong> ${user.uid}</p>
+                            <p><strong>Phone:</strong> ${userData.phone || 'N/A'}</p>
+                             <a href="vendor-dashboard.html" class="mt-5 w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-2xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                Go to Full Delivery Management
+                             </a>
+                        </div>
+                    </div>
+
+                     <!-- Placeholder Section -->
+                     <div class="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow">
+                         <h3 class="text-lg font-medium leading-6 text-neutral-900 dark:text-neutral-100 border-b border-neutral-200 dark:border-neutral-700 pb-2 mb-4">Quick Info</h3>
+                         <p class="text-neutral-500 dark:text-neutral-400 text-sm">Key information or quick actions might appear here later. For full details, use the button above.</p>
                  </div>
             </div>
         </div>
     `;
      document.getElementById('logout-button').addEventListener('click', handleLogout);
+    }, 1000);
 }
 
 function renderAdminPanel(user, userData) {
@@ -315,12 +351,12 @@ function renderAdminPanel(user, userData) {
 
     // Admin Panel Layout with Tailwind
     appContent.innerHTML = `
-        <div class="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900 p-4 sm:p-6 lg:p-8">
             <div class="max-w-7xl mx-auto">
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-gray-300">
-                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-0">Admin Dashboard</h1>
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-gray-300 dark:border-gray-700">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 sm:mb-0">Admin Dashboard</h1>
                     <div class="flex items-center space-x-4">
-                         <span class="text-sm text-gray-600 hidden sm:inline">Welcome, ${userData.name || user.email}</span>
+                         <span class="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">Welcome, ${userData.name || user.email}</span>
                          <button id="logout-button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                             Logout
                         </button>
@@ -331,38 +367,38 @@ function renderAdminPanel(user, userData) {
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     
                     <!-- Manage Users Card -->
-                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Manage Users</h3>
-                        <p class="text-sm text-gray-600 mb-4">View, edit, or suspend user accounts.</p>
-                        <a href="admin-users.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow hover:shadow-md transition-shadow duration-200">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 border-b dark:border-gray-700 pb-2">Manage Users</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">View, edit, or suspend user accounts.</p>
+                        <a href="admin-users.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-2xl hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Go to User Management
                         </a>
                     </div>
 
                     <!-- Manage Vendors Card -->
-                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Manage Vendors</h3>
-                        <p class="text-sm text-gray-600 mb-4">Approve new vendors, track performance.</p>
-                        <a href="admin-vendors.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow hover:shadow-md transition-shadow duration-200">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 border-b dark:border-gray-700 pb-2">Manage Vendors</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Approve new vendors, track performance.</p>
+                        <a href="admin-vendors.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-2xl hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Go to Vendor Management
                         </a>
                     </div>
 
                     <!-- Manage Orders Card -->
-                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Manage Orders</h3>
-                        <p class="text-sm text-gray-600 mb-4">View all orders, monitor status, resolve issues.</p>
-                        <a href="admin-orders.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow hover:shadow-md transition-shadow duration-200">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 border-b dark:border-gray-700 pb-2">Manage Orders</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">View all orders, monitor status, resolve issues.</p>
+                        <a href="admin-orders.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-2xl hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Go to Order Management
                         </a>
                     </div>
 
                     <!-- Settings / Pricing Card -->
-                    <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Settings / Pricing</h3>
-                        <p class="text-sm text-gray-600 mb-4">Set water price per liter, manage system settings.</p>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow hover:shadow-md transition-shadow duration-200">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 border-b dark:border-gray-700 pb-2">Settings / Pricing</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Set water price per liter, manage system settings.</p>
                          <!-- Changed button to a styled link -->
-                         <a href="admin-settings.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                         <a href="admin-settings.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-2xl hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Go to Settings
                         </a>
                     </div>
@@ -373,7 +409,7 @@ function renderAdminPanel(user, userData) {
     `;
 
     // Add event listeners
-    document.getElementById('logout-button').addEventListener('click', handleLogout);
+     document.getElementById('logout-button').addEventListener('click', handleLogout);
     // Add listeners for other admin buttons when implemented
 }
 
@@ -389,44 +425,44 @@ function renderOrderWaterView() {
 
     // Modernized Order Form with Tailwind
     appContent.innerHTML = `
-        <div class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-lg w-full space-y-8">
-                <div class="bg-white p-8 rounded-lg shadow-md space-y-6">
+                <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md space-y-6">
                     <div>
-                        <h2 class="text-center text-2xl font-bold text-gray-900">
+                        <h2 class="text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
                             Place New Water Order
                         </h2>
                     </div>
                     <form id="order-form" class="space-y-6">
-                        <div>
-                            <label for="order-quantity-slider" class="block text-sm font-medium text-gray-700">Quantity (Liters): <span id="order-quantity-value" class="font-semibold text-indigo-600">100</span>L</label>
+                <div>
+                            <label for="order-quantity-slider" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity (Liters): <span id="order-quantity-value" class="font-semibold text-indigo-600 dark:text-indigo-400">100</span>L</label>
                             <input type="range" id="order-quantity-slider" name="quantity" 
                                    min="20" max="200" step="10" value="100" required 
-                                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                        </div>
-                        <div>
-                            <label for="order-location" class="block text-sm font-medium text-gray-700">Delivery Location Details:</label>
+                                   class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                </div>
+                <div>
+                            <label for="order-location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Delivery Location Details:</label>
                             <textarea id="order-location" name="location" rows="4" required 
-                                      class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                      class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                       placeholder="Please provide specific details like house number, street, nearest landmark, etc."></textarea>
                         </div>
                         
                         <!-- Styled Error Message -->
-                        <div id="order-error" class="text-red-600 text-sm mt-2 hidden"></div>
+                        <div id="order-error" class="text-red-600 dark:text-red-400 text-sm mt-2 hidden"></div>
                         
                         <div class="flex items-center justify-between space-x-4">
                             <button type="button" id="cancel-order-button" 
-                                    class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 Cancel
                             </button>
                             <button type="submit" 
-                                    class="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    class="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 Submit Order
                             </button>
                         </div>
                     </form>
                 </div>
-            </div>
+                </div>
         </div>
     `;
 
@@ -616,7 +652,7 @@ function setupFirestoreListener(user) {
                     break;
                 case 'admin':
                     // Call the new function for admin users
-                    renderAdminPanel(user, userData); 
+                    renderAdminPanel(user, userData);
                     break;
                 default:
                     console.error("Unknown user role:", userData.role);
@@ -679,12 +715,12 @@ console.log("App initialized, waiting for auth state...");
 // Helper function to get Tailwind text/background color classes based on status
 function getStatusColorClasses(status) {
     switch (status) {
-        case 'pending':     return { text: 'text-blue-600', bg: 'bg-blue-100' };
-        case 'assigned':    return { text: 'text-yellow-600', bg: 'bg-yellow-100' };
-        case 'in_progress': return { text: 'text-orange-600', bg: 'bg-orange-100' };
-        case 'completed':   return { text: 'text-green-600', bg: 'bg-green-100' };
-        case 'cancelled':   return { text: 'text-red-600', bg: 'bg-red-100' };
-        default:            return { text: 'text-gray-500', bg: 'bg-gray-100' };
+        case 'pending':     return { text: 'text-primary-600', bg: 'bg-primary-100' };
+        case 'assigned':    return { text: 'text-warning-600', bg: 'bg-warning-100' };
+        case 'in_progress': return { text: 'text-warning-600', bg: 'bg-warning-100' };
+        case 'completed':   return { text: 'text-accent-600', bg: 'bg-accent-100' };
+        case 'cancelled':   return { text: 'text-error-600', bg: 'bg-error-100' };
+        default:            return { text: 'text-neutral-500', bg: 'bg-neutral-100' };
     }
 }
 

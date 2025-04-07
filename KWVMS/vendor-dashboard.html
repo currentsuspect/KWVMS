@@ -1,37 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Add dark class by default -->
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KWVMS - Vendor Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind for class-based dark mode
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        // Primary colors - Water theme
+                        primary: {
+                            50: '#f0f9ff',  // Lightest blue
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9', // Base blue
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e', // Darkest blue
+                        },
+                        // Accent colors
+                        accent: {
+                            50: '#f0fdf4',  // Lightest green
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e', // Base green
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d', // Darkest green
+                        },
+                        // Warning colors
+                        warning: {
+                            50: '#fffbeb',  // Lightest amber
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b', // Base amber
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f', // Darkest amber
+                        },
+                        // Error colors
+                        error: {
+                            50: '#fef2f2',  // Lightest red
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444', // Base red
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d', // Darkest red
+                        },
+                        // Neutral colors for text and backgrounds
+                        neutral: {
+                            50: '#fafafa',  // Lightest gray
+                            100: '#f5f5f5',
+                            200: '#e5e5e5',
+                            300: '#d4d4d4',
+                            400: '#a3a3a3',
+                            500: '#737373', // Base gray
+                            600: '#525252',
+                            700: '#404040',
+                            800: '#262626',
+                            900: '#171717', // Darkest gray
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Removed custom style.css link as Tailwind will handle styling -->
     <!-- <link rel="stylesheet" href="css/style.css"> -->
 </head>
-<body class="bg-gray-100">
+<body class="bg-neutral-100 dark:bg-neutral-900 font-sans">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <aside class="w-64 bg-white shadow-md flex flex-col">
-            <div class="p-4 border-b">
-                <h4 class="text-xl font-semibold text-center">Vendor Dashboard</h4>
-                <p class="text-sm text-gray-500 text-center mt-1" id="vendorName">Loading...</p>
+        <aside class="w-64 bg-white dark:bg-neutral-800 shadow-md flex flex-col">
+            <div class="p-4 border-b dark:border-neutral-700">
+                <h4 class="text-xl font-semibold text-center text-neutral-900 dark:text-neutral-100">Vendor Dashboard</h4>
+                <p class="text-sm text-neutral-500 dark:text-neutral-400 text-center mt-1" id="vendorName">Loading...</p>
             </div>
             <nav class="flex-grow p-4 space-y-2">
-                <a class="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-200 active" href="#orders" data-target="orders-section">
+                <a class="flex items-center px-4 py-2 text-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 active" href="#orders" data-target="orders-section">
                     <!-- Icon Placeholder --> Available Orders
                 </a>
-                <a class="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-200" href="#my-orders" data-target="my-orders-section">
+                <a class="flex items-center px-4 py-2 text-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700" href="#my-orders" data-target="my-orders-section">
                     <!-- Icon Placeholder --> My Orders
                 </a>
-                <a class="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-200" href="#profile" data-target="profile-section">
+                <a class="flex items-center px-4 py-2 text-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700" href="#profile" data-target="profile-section">
                     <!-- Icon Placeholder --> Profile
                 </a>
-                <a class="flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-200" href="#earnings" data-target="earnings-section">
+                <a class="flex items-center px-4 py-2 text-neutral-700 dark:text-neutral-300 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700" href="#earnings" data-target="earnings-section">
                     <!-- Icon Placeholder --> Earnings
                 </a>
             </nav>
-            <div class="p-4 border-t">
-                <button class="w-full px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" id="logoutBtn">
+            <div class="p-4 border-t dark:border-neutral-700">
+                <button class="w-full px-4 py-2 text-white bg-error-600 rounded-md hover:bg-error-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500" id="logoutBtn">
                     <!-- Icon Placeholder --> Logout
                 </button>
             </div>
@@ -41,13 +119,13 @@
         <main class="flex-1 p-6 overflow-y-auto">
             <!-- Availability Toggle -->
             <div class="flex items-center justify-between mb-6">
-                <span class="text-sm font-medium text-gray-700">Availability Status:</span>
+                <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Availability Status:</span>
                 <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
                     <input type="checkbox" id="availabilityToggle" class="sr-only peer" />
-                    <label for="availabilityToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-200 ease-in-out peer-checked:bg-green-500"></label>
+                    <label for="availabilityToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-neutral-300 dark:bg-neutral-600 cursor-pointer transition-colors duration-200 ease-in-out peer-checked:bg-accent-500"></label>
                     <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 ease-in-out transform peer-checked:translate-x-full"></div>
                 </div>
-                <span id="availabilityStatusText" class="text-sm font-semibold text-gray-800">Unavailable</span>
+                <span id="availabilityStatusText" class="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Unavailable</span>
             </div>
             <!-- <style>
                 .toggle-label {
@@ -60,9 +138,9 @@
 
             <!-- Available Orders Section -->
             <div id="orders-section" class="dashboard-section">
-                <div class="flex justify-between items-center pb-2 mb-4 border-b border-gray-300">
-                    <h1 class="text-2xl font-semibold text-gray-800">Available Orders</h1>
-                    <button type="button" class="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="refreshOrders">
+                <div class="flex justify-between items-center pb-2 mb-4 border-b border-neutral-300 dark:border-neutral-700">
+                    <h1 class="text-2xl font-semibold text-neutral-800 dark:text-neutral-100">Available Orders</h1>
+                    <button type="button" class="px-3 py-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm hover:bg-neutral-50 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" id="refreshOrders">
                         <!-- Icon Placeholder --> Refresh
                     </button>
                 </div>
@@ -70,90 +148,90 @@
                 <!-- Settings Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <!-- Radius Setting -->
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <label for="radiusInput" class="block text-sm font-medium text-gray-700 mb-1">Delivery Radius (km)</label>
-                        <input type="number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" id="radiusInput" min="1" max="100" value="5">
+                    <div class="bg-white dark:bg-neutral-800 p-4 rounded-lg shadow">
+                        <label for="radiusInput" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Delivery Radius (km)</label>
+                        <input type="number" class="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100" id="radiusInput" min="1" max="100" value="5">
                     </div>
                 </div>
 
                 <!-- Orders List -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="ordersList">
                     <!-- Orders will be dynamically inserted here -->
-                     <p class="text-gray-500 md:col-span-2 lg:col-span-3">Loading orders...</p> <!-- Placeholder -->
+                     <p class="text-neutral-500 dark:text-neutral-400 md:col-span-2 lg:col-span-3">Loading orders...</p> <!-- Placeholder -->
                 </div>
             </div>
 
             <!-- My Orders Section -->
             <div id="my-orders-section" class="dashboard-section hidden">
-                 <div class="flex justify-between items-center pb-2 mb-4 border-b border-gray-300">
-                    <h1 class="text-2xl font-semibold text-gray-800">My Orders</h1>
+                 <div class="flex justify-between items-center pb-2 mb-4 border-b border-neutral-300 dark:border-neutral-700">
+                    <h1 class="text-2xl font-semibold text-neutral-800 dark:text-neutral-100">My Orders</h1>
                     <!-- Add refresh or filter buttons if needed -->
                 </div>
                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="myOrdersList">
                     <!-- My orders will be dynamically inserted here -->
-                     <p class="text-gray-500 md:col-span-2 lg:col-span-3">Loading your orders...</p> <!-- Placeholder -->
+                     <p class="text-neutral-500 dark:text-neutral-400 md:col-span-2 lg:col-span-3">Loading your orders...</p> <!-- Placeholder -->
                 </div>
             </div>
 
             <!-- Profile Section -->
             <div id="profile-section" class="dashboard-section hidden">
-                <div class="pb-2 mb-4 border-b border-gray-300">
-                    <h1 class="text-2xl font-semibold text-gray-800">Profile & Settings</h1>
+                <div class="pb-2 mb-4 border-b border-neutral-300 dark:border-neutral-700">
+                    <h1 class="text-2xl font-semibold text-neutral-800 dark:text-neutral-100">Profile & Settings</h1>
                 </div>
                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <h5 class="text-lg font-medium text-gray-900 mb-4">Vendor Information</h5>
+                    <div class="bg-white dark:bg-neutral-800 p-6 rounded-lg shadow">
+                        <h5 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Vendor Information</h5>
                         <div class="space-y-3 text-sm">
-                            <p><strong class="font-medium text-gray-600">Name:</strong> <span id="profileName" class="text-gray-800">Loading...</span></p>
-                            <p><strong class="font-medium text-gray-600">Email:</strong> <span id="profileEmail" class="text-gray-800">Loading...</span></p>
-                            <p><strong class="font-medium text-gray-600">Status:</strong> <span id="profileStatus" class="font-medium text-gray-800">Loading...</span></p>
-                            <p><strong class="font-medium text-gray-600">Delivery Radius:</strong> <span id="profileRadius" class="text-gray-800">Loading...</span> km</p>
+                            <p><strong class="font-medium text-neutral-600 dark:text-neutral-400">Name:</strong> <span id="profileName" class="text-neutral-800 dark:text-neutral-200">Loading...</span></p>
+                            <p><strong class="font-medium text-neutral-600 dark:text-neutral-400">Email:</strong> <span id="profileEmail" class="text-neutral-800 dark:text-neutral-200">Loading...</span></p>
+                            <p><strong class="font-medium text-neutral-600 dark:text-neutral-400">Status:</strong> <span id="profileStatus" class="font-medium text-neutral-800 dark:text-neutral-200">Loading...</span></p>
+                            <p><strong class="font-medium text-neutral-600 dark:text-neutral-400">Delivery Radius:</strong> <span id="profileRadius" class="text-neutral-800 dark:text-neutral-200">Loading...</span> km</p>
                         </div>
-                        <hr class="my-4">
-                        <h6 class="text-base font-medium text-gray-900 mb-2">Current Location</h6>
-                        <p id="profileLocation" class="text-sm text-gray-600 min-h-[20px]">Not set</p>
-                        <button id="updateLocationBtn" class="mt-3 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <hr class="my-4 dark:border-neutral-700">
+                        <h6 class="text-base font-medium text-neutral-900 dark:text-neutral-100 mb-2">Current Location</h6>
+                        <p id="profileLocation" class="text-sm text-neutral-600 dark:text-neutral-400 min-h-[20px]">Not set</p>
+                        <button id="updateLocationBtn" class="mt-3 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                             Update My Current Location
                         </button>
-                        <div id="locationError" class="text-red-600 text-sm mt-2"></div>
-                        <div id="locationSuccess" class="text-green-600 text-sm mt-2"></div>
+                        <div id="locationError" class="text-error-600 dark:text-error-400 text-sm mt-2"></div>
+                        <div id="locationSuccess" class="text-accent-600 dark:text-accent-400 text-sm mt-2"></div>
                     </div>
                     <!-- Placeholder for other settings -->
-                    <div class="bg-white p-6 rounded-lg shadow">
-                         <h5 class="text-lg font-medium text-gray-900 mb-4">Other Settings</h5>
-                         <p class="text-gray-500 text-sm">Future settings can go here.</p>
+                    <div class="bg-white dark:bg-neutral-800 p-6 rounded-lg shadow">
+                         <h5 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Other Settings</h5>
+                         <p class="text-neutral-500 dark:text-neutral-400 text-sm">Future settings can go here.</p>
                     </div>
                 </div>
             </div>
 
             <!-- Earnings Section -->
             <div id="earnings-section" class="dashboard-section hidden">
-                 <div class="pb-2 mb-4 border-b border-gray-300">
-                    <h1 class="text-2xl font-semibold text-gray-800">Earnings</h1>
+                 <div class="pb-2 mb-4 border-b border-neutral-300 dark:border-neutral-700">
+                    <h1 class="text-2xl font-semibold text-neutral-800 dark:text-neutral-100">Earnings</h1>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <h5 class="text-lg font-medium text-gray-900 mb-4">Earnings Summary</h5>
+                    <div class="bg-white dark:bg-neutral-800 p-6 rounded-lg shadow">
+                        <h5 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Earnings Summary</h5>
                          <div class="space-y-3 text-sm">
-                            <p><strong>Total Earnings:</strong> <span id="totalEarnings" class="text-gray-700">Loading...</span></p>
-                            <p><strong>Completed Orders:</strong> <span id="completedOrders" class="text-gray-700">Loading...</span></p>
-                            <p><strong>Average Rating:</strong> <span id="averageRating" class="text-gray-700">Loading...</span></p>
+                            <p><strong class="text-neutral-700 dark:text-neutral-300">Total Earnings:</strong> <span id="totalEarnings" class="text-neutral-700 dark:text-neutral-300">Loading...</span></p>
+                            <p><strong class="text-neutral-700 dark:text-neutral-300">Completed Orders:</strong> <span id="completedOrders" class="text-neutral-700 dark:text-neutral-300">Loading...</span></p>
+                            <p><strong class="text-neutral-700 dark:text-neutral-300">Average Rating:</strong> <span id="averageRating" class="text-neutral-700 dark:text-neutral-300">Loading...</span></p>
                          </div>
                     </div>
                      <!-- Placeholder for detailed earnings breakdown -->
-                     <div class="bg-white p-6 rounded-lg shadow">
-                         <h5 class="text-lg font-medium text-gray-900 mb-4">Earnings Breakdown</h5>
-                         <p class="text-gray-500 text-sm">Detailed earnings history will appear here.</p>
+                     <div class="bg-white dark:bg-neutral-800 p-6 rounded-lg shadow">
+                         <h5 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Earnings Breakdown</h5>
+                         <p class="text-neutral-500 dark:text-neutral-400 text-sm">Detailed earnings history will appear here.</p>
                     </div>
                 </div>
             </div>
 
             <!-- Order Template (hidden) -->
             <template id="orderTemplate">
-                <div class="bg-white rounded-lg shadow overflow-hidden flex flex-col transition-shadow duration-200 hover:shadow-md">
+                <div class="bg-white dark:bg-neutral-800 rounded-lg shadow overflow-hidden flex flex-col transition-shadow duration-200 hover:shadow-md">
                     <div class="p-4 flex-grow">
-                        <h5 class="text-lg font-semibold text-gray-800 mb-2">Order #<span class="orderId"></span></h5>
-                        <div class="text-sm space-y-1 text-gray-600">
+                        <h5 class="text-lg font-semibold text-neutral-800 dark:text-neutral-100 mb-2">Order #<span class="orderId"></span></h5>
+                        <div class="text-sm space-y-1 text-neutral-600 dark:text-neutral-400">
                             <p><strong>Quantity:</strong> <span class="quantity"></span>L</p>
                             <p><strong>Location:</strong> <span class="location"></span></p>
                             <p><strong>Distance:</strong> <span class="distance"></span> km</p>
@@ -161,8 +239,8 @@
                             <p><strong>Status:</strong> <span class="order-status font-semibold">Pending</span></p>
                         </div>
                     </div>
-                    <div class="p-4 bg-gray-50 border-t border-gray-200">
-                        <button class="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 accept-order">Accept Order</button>
+                    <div class="p-4 bg-neutral-50 dark:bg-neutral-700 border-t border-neutral-200 dark:border-neutral-600">
+                        <button class="w-full px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 accept-order">Accept Order</button>
                         <!-- Action buttons will be modified by JS based on status -->
                     </div>
                 </div>

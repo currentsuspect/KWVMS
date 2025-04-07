@@ -171,11 +171,25 @@ async function loadMyOrders() {
 
             // Display Status and style card based on status
             const statusElement = orderCard.querySelector('.order-status');
-            const currentStatus = order.status || 'unknown'; // Should always have status here
+            const currentStatus = order.status || 'pending'; // Default to pending if missing
             statusElement.textContent = formatStatus(currentStatus);
 
             // --- Modify Action Button based on Status ---
-            const actionButtonContainer = orderCard.querySelector('.mt-auto, .bg-gray-50'); // Select the button container
+            // Try multiple selectors to find the button container
+            let actionButtonContainer = orderCard.querySelector('.p-4.bg-neutral-50, .p-4.dark\\:bg-neutral-700');
+            
+            // Fallback selectors if the first one doesn't work
+            if (!actionButtonContainer) {
+                actionButtonContainer = orderCard.querySelector('.border-t');
+            }
+            
+            // Last resort - find any div that contains a button
+            if (!actionButtonContainer) {
+                actionButtonContainer = orderCard.querySelector('div:has(button)');
+            }
+            
+            console.log(`[My Orders] Button container found: ${actionButtonContainer ? 'Yes' : 'No'}`);
+            
             let buttonHtml = ''; // Build button HTML string
 
             let nextStatus = '';
@@ -188,26 +202,26 @@ async function loadMyOrders() {
                 case 'assigned':
                     nextStatus = 'in_progress';
                     buttonText = 'Mark In Progress';
-                    buttonColorClasses = 'bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-500'; // Yellow
+                    buttonColorClasses = 'bg-warning-500 hover:bg-warning-600 focus:ring-warning-500'; // Warning color
                     break;
                 case 'in_progress':
                     nextStatus = 'completed';
                     buttonText = 'Mark Completed';
-                    buttonColorClasses = 'bg-green-500 hover:bg-green-600 focus:ring-green-500'; // Green
+                    buttonColorClasses = 'bg-accent-500 hover:bg-accent-600 focus:ring-accent-500'; // Accent color
                     break;
                 case 'completed':
                     buttonText = 'Completed';
-                    buttonColorClasses = 'bg-gray-400 cursor-not-allowed'; // Grey, non-interactive
+                    buttonColorClasses = 'bg-neutral-400 cursor-not-allowed'; // Neutral color
                     isDisabled = true;
                     break;
                 case 'pending': // Added case for pending if it appears in 'My Orders' somehow
                      buttonText = 'Pending Acceptance';
-                     buttonColorClasses = 'bg-blue-500 cursor-not-allowed'; // Blue, non-interactive
+                     buttonColorClasses = 'bg-primary-500 cursor-not-allowed'; // Primary color
                      isDisabled = true;
                      break;
                 default: // Includes 'cancelled' or unknown
                     buttonText = formatStatus(currentStatus); // Show current status
-                    buttonColorClasses = 'bg-gray-400 cursor-not-allowed';
+                    buttonColorClasses = 'bg-neutral-400 cursor-not-allowed';
                     isDisabled = true;
             }
 
@@ -226,12 +240,18 @@ async function loadMyOrders() {
                 if (!isDisabled) {
                      const newButton = actionButtonContainer.querySelector('button');
                      if(newButton){
+                        console.log(`[My Orders] Setting up button for order ${order.id} with next status: ${nextStatus}`);
                         newButton.addEventListener('click', (e) => {
                             const clickedButton = e.currentTarget;
+                            console.log(`[My Orders] Button clicked for order ${clickedButton.dataset.orderId} with next status: ${clickedButton.dataset.nextStatus}`);
                              updateOrderStatus(clickedButton.dataset.orderId, clickedButton.dataset.nextStatus);
                         });
+                     } else {
+                         console.warn(`[My Orders] Button element not found in container for order ${order.id}`);
                      }
                 }
+            } else {
+                console.warn(`[My Orders] Could not find button container for order ${order.id}`);
             }
             // --- End Action Button Modification ---
             
@@ -239,11 +259,13 @@ async function loadMyOrders() {
         });
 
         // Add event delegation for dynamically added buttons IF the above direct binding fails
-        // myOrdersList.addEventListener('click', function(event) {
-        //     if (event.target.matches('button[data-order-id]')) {
-        //         updateOrderStatus(event.target.dataset.orderId, event.target.dataset.nextStatus);
-        //     }
-        // });
+        myOrdersList.addEventListener('click', function(event) {
+            // Check if the clicked element is a button with data-order-id attribute
+            if (event.target.tagName === 'BUTTON' && event.target.hasAttribute('data-order-id')) {
+                console.log(`[My Orders] Event delegation: Button clicked for order ${event.target.dataset.orderId} with next status: ${event.target.dataset.nextStatus}`);
+                updateOrderStatus(event.target.dataset.orderId, event.target.dataset.nextStatus);
+            }
+        });
 
     } catch (error) {
         console.error('Error loading my orders:', error);
@@ -268,6 +290,43 @@ auth.onAuthStateChanged(async (user) => {
                 console.log("User document exists and role is 'vendor' for user:", user.uid);
                 currentVendor = userDoc.data(); // Use data from 'users' doc
                 currentVendor.id = user.uid;
+                
+                // Set default location if none is provided
+                if (!currentVendor.location || typeof currentVendor.location.latitude !== 'number') {
+                    console.log("Setting default location for vendor");
+                    
+                    // Try to get location from localStorage first
+                    try {
+                        const savedLocation = localStorage.getItem('vendorLocation');
+                        if (savedLocation) {
+                            const parsedLocation = JSON.parse(savedLocation);
+                            if (parsedLocation && typeof parsedLocation.latitude === 'number') {
+                                console.log("Using location from localStorage:", parsedLocation);
+                                currentVendor.location = parsedLocation;
+                            } else {
+                                // Use default Kajiado coordinates if localStorage data is invalid
+                                currentVendor.location = {
+                                    latitude: -1.2921, // Default to Kajiado coordinates
+                                    longitude: 36.8219
+                                };
+                            }
+                        } else {
+                            // Use default Kajiado coordinates if no localStorage data
+                            currentVendor.location = {
+                                latitude: -1.2921, // Default to Kajiado coordinates
+                                longitude: 36.8219
+                            };
+                        }
+                    } catch (localStorageError) {
+                        console.error("Error reading from localStorage:", localStorageError);
+                        // Use default Kajiado coordinates if localStorage error
+                        currentVendor.location = {
+                            latitude: -1.2921, // Default to Kajiado coordinates
+                            longitude: 36.8219
+                        };
+                    }
+                }
+                
                 // Use fields from the user document
                 vendorNameElement.textContent = currentVendor.name || user.email;
                 availabilityToggle.checked = currentVendor.status === 'available'; // Assuming status is stored here
@@ -317,17 +376,18 @@ async function loadAvailableOrders() {
             console.warn("Vendor location is not set or invalid. Cannot calculate distances.");
             // Apply consistent styling to the message
             ordersList.innerHTML = '<div class="md:col-span-2 lg:col-span-3 text-center py-8 text-gray-500"><p>Please set your current location in Profile & Settings to see available orders near you.</p></div>';
-            // // Fetch all pending orders without distance calculation (REMOVED THIS FALLBACK)
-            // const ordersSnapshot = await db.collection('orders').where('status', '==', 'pending').get();
-            // ordersList.innerHTML = ''; // Clear message if needed
-            // ordersSnapshot.forEach(doc => displayOrderCard(doc.data(), doc.id, 'N/A'));
             return; 
         }
+
+        // Show loading state
+        ordersList.innerHTML = '<div class="md:col-span-2 lg:col-span-3 text-center py-8 text-gray-500"><p>Loading available orders...</p></div>';
 
         // Fetch all pending orders
         const ordersSnapshot = await db.collection('orders')
             .where('status', '==', 'pending')
             .get();
+
+        console.log(`[loadAvailableOrders] Found ${ordersSnapshot.size} pending orders`);
 
         // Check if there are ANY pending orders at all
         if (ordersSnapshot.empty) {
@@ -344,8 +404,9 @@ async function loadAvailableOrders() {
         ordersSnapshot.forEach(doc => {
             const order = doc.data();
             order.id = doc.id;
+            console.log(`[loadAvailableOrders] Processing order ${doc.id} with status: ${order.status}`);
 
-            let distance = Infinity; 
+            let distance = Infinity;
             let distanceText = 'N/A'; // Default display text
 
             if (order.location && typeof order.location === 'object' && 
@@ -353,7 +414,7 @@ async function loadAvailableOrders() {
                 typeof order.location.longitude === 'number') {
                 try {
                      if(currentVendor.location && typeof currentVendor.location.latitude === 'number'){
-                         distance = calculateDistance(currentVendor.location, order.location);
+                distance = calculateDistance(currentVendor.location, order.location);
                          distanceText = distance.toFixed(1); // Calculate text only if distance is valid
                      } else {
                          console.warn(`Vendor location is invalid, cannot calculate distance for order ${order.id}`);
@@ -427,12 +488,29 @@ function displayOrderCard(order, orderId, distanceText) {
     // Add accept order handler
     const acceptBtn = orderCard.querySelector('.accept-order');
     if (acceptBtn) { 
+        console.log(`[displayOrderCard] Found accept button for order ${orderId}. Status: ${currentStatus}`);
+        
+        // Only show Accept Order button for pending orders
+        if (currentStatus === 'pending') {
         acceptBtn.textContent = 'Accept Order'; 
-        acceptBtn.classList.remove('btn-info', 'btn-success', 'btn-secondary'); // Reset classes
-        acceptBtn.classList.add('btn-primary');
-        acceptBtn.replaceWith(acceptBtn.cloneNode(true)); 
-        const newAcceptBtn = orderCard.querySelector('.accept-order'); 
-        newAcceptBtn.addEventListener('click', () => acceptOrder(orderId));
+            acceptBtn.classList.remove('btn-info', 'btn-success', 'btn-secondary', 'bg-neutral-400', 'cursor-not-allowed'); // Reset classes
+            acceptBtn.classList.add('bg-primary-600', 'hover:bg-primary-700');
+            acceptBtn.disabled = false;
+            
+            // Add event listener for pending orders
+            acceptBtn.addEventListener('click', () => {
+                console.log(`[Accept Button Click] Clicked for order ${orderId}`);
+                acceptOrder(orderId);
+            });
+        } else {
+            // For non-pending orders, disable the button and change text
+            acceptBtn.textContent = formatStatus(currentStatus);
+            acceptBtn.classList.remove('btn-info', 'btn-success', 'btn-secondary', 'bg-primary-600', 'hover:bg-primary-700');
+            acceptBtn.classList.add('bg-neutral-400', 'cursor-not-allowed');
+            acceptBtn.disabled = true;
+        }
+    } else {
+        console.warn(`[displayOrderCard] Could not find .accept-order button for order ${orderId}`);
     }
 
     ordersList.appendChild(orderCard);
@@ -440,24 +518,78 @@ function displayOrderCard(order, orderId, distanceText) {
 
 // Accept order - Update order status
 async function acceptOrder(orderId) {
+    console.log(`[acceptOrder] Function called for order ${orderId}`);
     try {
-        await db.collection('orders').doc(orderId).update({
+        // First check if the order exists and is in pending status
+        const orderRef = db.collection('orders').doc(orderId);
+        const orderDoc = await orderRef.get();
+        
+        if (!orderDoc.exists) {
+            throw new Error('Order not found');
+        }
+        
+        const orderData = orderDoc.data();
+        if (orderData.status !== 'pending') {
+            throw new Error('Order is no longer available');
+        }
+
+        // Check if the order was created by an admin user
+        let isAdminOrder = false;
+        if (orderData.userId) {
+            try {
+                const userDoc = await db.collection('users').doc(orderData.userId).get();
+                if (userDoc.exists && userDoc.data().role === 'admin') {
+                    isAdminOrder = true;
+                    console.log('Order was created by an admin user');
+                }
+            } catch (error) {
+                console.warn('Could not check if order was created by admin:', error);
+            }
+        }
+
+        // Update the order status
+        try {
+            await orderRef.update({
             status: 'assigned',
             assignedVendorId: currentVendor.id,
             assignedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Update vendor status IN THE USER DOCUMENT
+            // Update vendor status
         await db.collection('users').doc(currentVendor.id).update({
             status: 'busy'
         });
 
+            // Update UI
         availabilityToggle.checked = false;
         loadAvailableOrders();
         alert('Order accepted successfully!');
+        } catch (updateError) {
+            console.error('Error updating order:', updateError);
+            
+            // If this is an admin-created order and we're getting a permission error,
+            // try an alternative approach
+            if (isAdminOrder && updateError.code === 'permission-denied') {
+                console.log('Attempting alternative approach for admin-created order');
+                
+                // Try to update just the vendor status first
+                await db.collection('users').doc(currentVendor.id).update({
+                    status: 'busy'
+                });
+                
+                // Then notify the user that they need admin assistance
+                alert('This order was created by an administrator. Please contact support to complete the acceptance process.');
+                
+                // Update UI
+                availabilityToggle.checked = false;
+                loadAvailableOrders();
+            } else {
+                throw updateError; // Re-throw if it's not an admin order or a different error
+            }
+        }
     } catch (error) {
         console.error('Error accepting order:', error);
-        alert('Error accepting order. Please try again.');
+        alert(error.message || 'Error accepting order. Please try again.');
     }
 }
 
@@ -515,20 +647,45 @@ radiusInput.addEventListener('change', async (e) => {
 
 // Function to update order status in Firestore
 async function updateOrderStatus(orderId, newStatus) {
-    console.log(`Updating order ${orderId} to status: ${newStatus}`);
+    console.log(`[updateOrderStatus] Updating order ${orderId} to status: ${newStatus}`);
+    
+    if (!orderId || !newStatus) {
+        console.error(`[updateOrderStatus] Missing required parameters: orderId=${orderId}, newStatus=${newStatus}`);
+        alert('Error: Missing order information. Please try again.');
+        return;
+    }
+    
     const orderRef = db.collection('orders').doc(orderId);
 
     try {
+        // First check if the order exists
+        const orderDoc = await orderRef.get();
+        if (!orderDoc.exists) {
+            console.error(`[updateOrderStatus] Order ${orderId} does not exist`);
+            alert('Error: Order not found. It may have been deleted.');
+            return;
+        }
+        
+        // Check if the order is assigned to the current vendor
+        const orderData = orderDoc.data();
+        if (orderData.assignedVendorId !== currentVendor.id) {
+            console.error(`[updateOrderStatus] Order ${orderId} is not assigned to current vendor`);
+            alert('Error: This order is not assigned to you.');
+            return;
+        }
+        
+        // Update the order status
         await orderRef.update({
             status: newStatus,
             // Optionally add timestamps for status changes
             [`${newStatus}Timestamp`]: firebase.firestore.FieldValue.serverTimestamp() 
         });
-        console.log(`Order ${orderId} status updated successfully.`);
+        console.log(`[updateOrderStatus] Order ${orderId} status updated successfully.`);
+        
         // Refresh the 'My Orders' list to show the change
         loadMyOrders(); 
     } catch (error) {
-        console.error("Error updating order status:", error);
+        console.error("[updateOrderStatus] Error updating order status:", error);
         alert(`Failed to update order status: ${error.message}`);
     }
 }
@@ -545,12 +702,63 @@ function formatStatus(status) {
     }
 }
 
+// Check if vendor has permission to update location
+async function checkVendorPermissions() {
+    if (!currentVendor || !currentVendor.id) {
+        console.error("Vendor info not available for permission check.");
+        return false;
+    }
+    
+    try {
+        // Check if the user is a vendor
+        const userDoc = await db.collection('users').doc(currentVendor.id).get();
+        if (!userDoc.exists) {
+            console.error("User document does not exist.");
+            return false;
+        }
+        
+        const userData = userDoc.data();
+        if (userData.role !== 'vendor') {
+            console.error("User is not a vendor.");
+            return false;
+        }
+        
+        console.log("Vendor permissions verified.");
+        return true;
+    } catch (error) {
+        console.error("Error checking vendor permissions:", error);
+        return false;
+    }
+}
+
 // --- Update Location Handler ---
 if (updateLocationBtn) {
     updateLocationBtn.addEventListener('click', async () => {
         if (!currentVendor || !currentVendor.id) {
             console.error("Vendor info not available for location update.");
             if(locationErrorElement) locationErrorElement.textContent = 'Error: Vendor data not loaded.';
+            return;
+        }
+
+        // Check if Firebase is properly initialized
+        if (!firebase || !firebase.apps || firebase.apps.length === 0) {
+            console.error("Firebase is not properly initialized.");
+            if(locationErrorElement) locationErrorElement.textContent = 'Error: Firebase is not properly initialized. Please refresh the page.';
+            return;
+        }
+
+        // Check if Firestore is available
+        if (!firebase.firestore) {
+            console.error("Firestore is not available.");
+            if(locationErrorElement) locationErrorElement.textContent = 'Error: Firestore is not available. Please refresh the page.';
+            return;
+        }
+        
+        // Check vendor permissions
+        const hasPermission = await checkVendorPermissions();
+        if (!hasPermission) {
+            console.error("Vendor does not have permission to update location.");
+            if(locationErrorElement) locationErrorElement.textContent = 'Error: You do not have permission to update your location.';
             return;
         }
 
@@ -580,29 +788,69 @@ if (updateLocationBtn) {
                 try {
                     // Update Firestore
                     console.log(`Attempting to update Firestore path: users/${currentVendor.id}`);
-                    // Restore original update
-                    await db.collection('users').doc(currentVendor.id).update({
-                        location: newLocation,
-                        lastLocationUpdate: firebase.firestore.FieldValue.serverTimestamp() 
-                    });
+                    console.log(`Current vendor data:`, currentVendor);
+                    
+                    // Create a clean update object with only the fields we want to update
+                    const updateData = {
+                        location: newLocation
+                    };
+                    
+                    console.log(`Update data:`, updateData);
+                    
+                    // Add timestamp only if it's supported
+                    if (firebase.firestore && firebase.firestore.FieldValue) {
+                        updateData.lastLocationUpdate = firebase.firestore.FieldValue.serverTimestamp();
+                        console.log(`Added serverTimestamp to update data`);
+                    } else {
+                        console.warn(`firebase.firestore.FieldValue is not available`);
+                    }
+                    
+                    // Update Firestore with the clean update object
+                    console.log(`Sending update to Firestore...`);
+                    await db.collection('users').doc(currentVendor.id).update(updateData);
 
-                    console.log("Firestore location updated successfully."); // Restore original log
+                    console.log("Firestore location updated successfully.");
                     
                     // Update local vendor object and UI
-                    currentVendor.location = newLocation; // Restore update
+                    currentVendor.location = newLocation;
                     if(profileLocationElement) profileLocationElement.textContent = 
-                        `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`; // Restore UI update
-                    if(locationSuccessElement) locationSuccessElement.textContent = 'Location updated successfully!'; // Restore original message
+                        `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`;
+                    if(locationSuccessElement) locationSuccessElement.textContent = 'Location updated successfully!';
                     
                     // Reload available orders as location has changed
-                    loadAvailableOrders(); // Restore reload
-
+                    loadAvailableOrders();
                 } catch (error) {
-                    console.error("Error updating Firestore location:", error); // Keep original error message
-                    if(locationErrorElement) locationErrorElement.textContent = 'Failed to save location. Please try again.';
-                     // Check for permission errors specifically
+                    console.error("Error updating Firestore location:", error);
+                    console.error("Error details:", {
+                        code: error.code,
+                        message: error.message,
+                        stack: error.stack
+                    });
+                    
+                    // Check for specific error types
                      if (error.code === 'permission-denied') {
-                        locationErrorElement.textContent += ' (Check Firestore Rules)';
+                        if(locationErrorElement) locationErrorElement.textContent = 
+                            'Permission denied. Please make sure you are logged in as a vendor.';
+                    } else if (error.code === 'unavailable' || error.message.includes('CORS')) {
+                        if(locationErrorElement) locationErrorElement.textContent = 
+                            'Network error. Please check your internet connection and try again.';
+                    } else {
+                        if(locationErrorElement) locationErrorElement.textContent = 
+                            `Error updating location: ${error.message}`;
+                    }
+                    
+                    // Still update the local UI even if Firestore update fails
+                    // This provides a better user experience
+                    currentVendor.location = newLocation;
+                    if(profileLocationElement) profileLocationElement.textContent = 
+                        `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`;
+                    
+                    // Try to store the location in localStorage as a fallback
+                    try {
+                        localStorage.setItem('vendorLocation', JSON.stringify(newLocation));
+                        console.log("Location saved to localStorage as fallback");
+                    } catch (localStorageError) {
+                        console.error("Error saving to localStorage:", localStorageError);
                     }
                 } finally {
                     updateLocationBtn.disabled = false;
@@ -610,30 +858,15 @@ if (updateLocationBtn) {
                 }
             },
             (error) => {
-                console.error("Error getting geolocation:", error);
-                let message = 'Could not get location.';
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        message = "Location permission denied.";
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        message = "Location information is unavailable.";
-                        break;
-                    case error.TIMEOUT:
-                        message = "Location request timed out.";
-                        break;
-                    case error.UNKNOWN_ERROR:
-                        message = "An unknown error occurred retrieving location.";
-                        break;
-                }
-                if(locationErrorElement) locationErrorElement.textContent = message;
+                console.error("Geolocation error:", error);
+                if(locationErrorElement) locationErrorElement.textContent = `Geolocation error: ${error.message}`;
                 updateLocationBtn.disabled = false;
                 updateLocationBtn.textContent = 'Update My Current Location';
             },
             { 
-                enableHighAccuracy: true, // Request more accurate position
-                timeout: 10000, // Set timeout to 10 seconds
-                maximumAge: 0 // Don't use cached position
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
             } 
         );
     });

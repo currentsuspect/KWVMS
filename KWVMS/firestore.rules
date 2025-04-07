@@ -12,8 +12,16 @@
           allow update: if request.auth != null && request.auth.uid == userId && 
                          // Check the role of the user making the request, not the incoming data
                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
-                         request.resource.data.diff(resource.data).affectedKeys()
-                           .hasOnly(['status', 'radius', 'location', 'lastUpdated']);
+                         (
+                           // Allow updating location fields - more flexible approach
+                           (request.resource.data.diff(resource.data).affectedKeys()
+                             .hasAny(['location', 'lastLocationUpdate']) && 
+                            request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['location', 'lastLocationUpdate'])) ||
+                           // Allow updating status and radius
+                           request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['status', 'radius', 'lastUpdated'])
+                         );
         }
 
         // Rules for orders collection
@@ -52,7 +60,11 @@
                           resource.data.status == 'pending' && // Can only cancel pending orders
                           request.resource.data.diff(resource.data).affectedKeys()
                             .hasOnly(['status']) &&
-                          request.resource.data.status == 'cancelled') // Example: Allow user to set status to 'cancelled'
+                          request.resource.data.status == 'cancelled') || // Example: Allow user to set status to 'cancelled'
+                          
+                         // Admin can update any order (for testing and management)
+                         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
                        );
         }
 

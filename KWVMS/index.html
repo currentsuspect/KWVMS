@@ -1,40 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Add dark class by default -->
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kajiado Water Vending</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="css/style.css">
+    <script>
+        // Configure Tailwind for class-based dark mode with custom colors
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        // Primary colors - Water theme
+                        primary: {
+                            50: '#f0f9ff',  // Lightest blue
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9', // Base blue
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e', // Darkest blue
+                        },
+                        // Accent colors
+                        accent: {
+                            50: '#f0fdf4',  // Lightest green
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e', // Base green
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d', // Darkest green
+                        },
+                        // Warning colors
+                        warning: {
+                            50: '#fffbeb',  // Lightest amber
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b', // Base amber
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f', // Darkest amber
+                        },
+                        // Error colors
+                        error: {
+                            50: '#fef2f2',  // Lightest red
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444', // Base red
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d', // Darkest red
+                        },
+                        // Neutral colors for text and backgrounds
+                        neutral: {
+                            50: '#fafafa',  // Lightest gray
+                            100: '#f5f5f5',
+                            200: '#e5e5e5',
+                            300: '#d4d4d4',
+                            400: '#a3a3a3',
+                            500: '#737373', // Base gray
+                            600: '#525252',
+                            700: '#404040',
+                            800: '#262626',
+                            900: '#171717', // Darkest gray
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
 </head>
-<body>
-    <header class="bg-white shadow-sm py-3">
-        <!-- Removed the main H1 title -->
-        <!-- <h1 class="text-center text-lg font-semibold text-gray-800">Kajiado Water Vending Management System</h1> -->
-         <nav class="container mx-auto px-4 flex justify-end">
-            <!-- Future nav items can go here, perhaps logo on the left? -->
-         </nav>
+<body class="bg-neutral-100 dark:bg-neutral-900 font-sans antialiased">
+
+    <!-- Header with Water Drop Logo -->
+    <header class="bg-white dark:bg-neutral-800 shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                 <div class="flex-shrink-0 flex items-center">
+                     <!-- Water Drop Logo SVG -->
+                     <svg class="h-8 w-8 text-primary-600 dark:text-primary-400 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" stroke-width="1.5" stroke="currentColor">
+                         <path d="M174,47.75a256.11,256.11,0,0,0-41.45-38.3,8,8,0,0,0-9.1,0,256.11,256.11,0,0,0-41.45,38.3C61.79,77.42,49.5,123.61,49.51,169.25c0,45.63,17.18,89.44,48.46,121.87A88.45,88.45,0,0,0,128,232a88.45,88.45,0,0,0,30-41.13c31.28-32.43,48.46-76.24,48.46-121.87C206.5,123.61,194.21,77.42,174,47.75ZM128,216a72.49,72.49,0,0,1-23.31-3.93,74.91,74.91,0,0,1-21.41-11.38C77.93,172.17,65,134.21,65,169.25c0-38.52,10.39-75.3,28.47-105.59a240.3,240.3,0,0,1,34.54-31.57,240.3,240.3,0,0,1,34.54,31.57C180.61,94,191,130.73,191,169.25c0-35,0-12.92-18.28,31.44a74.91,74.91,0,0,1-21.41,11.38A72.49,72.49,0,0,1,128,216Z" fill="currentColor"></path>
+                     </svg>
+                     <span class="text-xl font-bold text-primary-600 dark:text-primary-400">KWVMS</span>
+                 </div>
+                 <!-- Nav Links / Actions Placeholder -->
+                 <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                     <!-- Current: "border-primary-500 text-neutral-900", Default: "border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700" -->
+                     <!-- <a href="#" class="border-primary-500 text-neutral-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a> -->
+                 </div>
+                 <!-- Dark Mode Toggle Placeholder -->
+                 <div id="theme-toggle-placeholder"></div>
+            </div>
+        </nav>
     </header>
 
-    <main id="app-content">
-        <!-- Dynamic content (Login form, User dashboard, Vendor panel, Admin panel) will be loaded here -->
-        <p>Loading...</p>
+    <!-- Main Content Area -->
+    <main id="app-content" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Dynamic content will be loaded here -->
+        <div class="flex items-center justify-center h-64">
+            <div class="flex flex-col items-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mb-4"></div>
+                <p class="text-neutral-500 dark:text-neutral-400">Loading...</p>
+            </div>
+        </div>
     </main>
 
-    <footer class="bg-gray-100 text-center py-4 mt-8">
-        <p class="text-sm text-gray-600">&copy; 2024 Kajiado Water Vending</p>
+    <!-- Footer with Water Drop Logo -->
+    <footer class="bg-white dark:bg-neutral-800 mt-12 py-4 border-t border-neutral-200 dark:border-neutral-700">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm text-neutral-500 dark:text-neutral-400">&copy; 2025 Kajiado Water Vending Management System. All rights reserved.</p>
+        </div>
     </footer>
 
-    <!-- Firebase SDK -->
-    <!-- REMOVED Compatibility libraries -->
-    <!-- <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script> -->
-    <!-- <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script> -->
-    <!-- <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script> -->
+    <!-- Firebase SDK (using compat versions for simplicity with existing code) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
-    <!-- Load Firebase Config FIRST -->
+    <!-- Your Custom Scripts -->
     <script src="js/firebase-config.js"></script>
-
-    <!-- Link to your main script as a module -->
+    <!-- Load main.js as a module -->
     <script type="module" src="js/main.js"></script>
+
 </body>
 </html>

@@ -1,12 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Add dark class by default -->
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Settings - KWVMS Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind for class-based dark mode
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 dark:bg-gray-900">
 
     <div class="container mx-auto px-4 py-8 max-w-2xl"> <!-- Limit width for settings page -->
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
