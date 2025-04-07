@@ -16,22 +16,24 @@
                        // Allow user to update their own doc if vendor (specific fields)
                        ( (request.auth.uid == userId && 
                           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
-                          (
-                            // Allow updating just location fields
-                            (request.resource.data.diff(resource.data).affectedKeys()
-                              .hasAny(['location', 'lastLocationUpdate']) && 
-                             request.resource.data.diff(resource.data).affectedKeys()
-                              .hasOnly(['location', 'lastLocationUpdate'])) ||
-                            // Allow updating status and radius
-                            request.resource.data.diff(resource.data).affectedKeys()
-                              .hasOnly(['status', 'radius', 'lastUpdated'])
-                          )
+                          request.resource.data.diff(resource.data).affectedKeys()
+                            .hasOnly([ // List ALL fields vendor can update in their own doc
+                                'location', 
+                                'lastLocationUpdate',
+                                'status', 
+                                'radius', 
+                                'lastUpdated',
+                                'completedOrdersCount', // <-- Add earnings field
+                                'totalEarnedValue'      // <-- Add earnings field
+                             ]) 
                          )
                          ||
                          // Allow admin to update specific fields (e.g., role, status - add more as needed)
                          ( get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
                            request.resource.data.diff(resource.data).affectedKeys()
-                             .hasOnly(['role', 'status', 'accountSuspended']) // Example fields admin can change
+                             .hasOnly(['role', 'status', 'accountSuspended', // Also allow admin to reset/adjust earnings if needed
+                                       'completedOrdersCount',
+                                       'totalEarnedValue']) // Example fields admin can change
                          ) 
                        );
                        
@@ -53,6 +55,14 @@
           // Allow specific updates based on role and order status
           allow update: if request.auth != null && 
                        (
+                         // --------- USER updates payment status from pending to paid ---------
+                         (resource.data.userId == request.auth.uid && // Is the owner of the order
+                          resource.data.paymentStatus == 'pending' &&  // Current payment status is pending
+                          request.resource.data.paymentStatus == 'paid' && // New status is paid
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus', 'paidAt']) // Only changing payment status and paidAt timestamp
+                         ) ||
+                         // --------- End USER payment update ---------
+                         
                          // Vendor accepts a PENDING order
                          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
@@ -89,9 +99,11 @@
 
         // Rules for a specific settings document
         match /settings/main {
-           // Allow only admins to read and write the main settings document
-           allow read, write: if request.auth != null && 
-                               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+           // Allow any authenticated user to read settings
+           allow read: if request.auth != null;
+           // Allow only admins to write settings
+           allow write: if request.auth != null && 
+                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
         }
 
         // Add rules for other collections (e.g., orders) later --> Should be 'orders' rules above

@@ -30,6 +30,7 @@ const profileLocationElement = document.getElementById('profileLocation');
 const updateLocationBtn = document.getElementById('updateLocationBtn');
 const locationErrorElement = document.getElementById('locationError');
 const locationSuccessElement = document.getElementById('locationSuccess');
+const availabilityStatusText = document.getElementById('availabilityStatusText');
 
 // Handle navigation
 navLinks.forEach(link => {
@@ -118,12 +119,38 @@ function loadProfile() {
 }
 
 // Load earnings data
-function loadEarnings() {
-    if (currentVendor) {
-        // This is a placeholder. Implement actual earnings calculation
-        document.getElementById('totalEarnings').textContent = 'KES 0';
-        document.getElementById('completedOrders').textContent = '0';
-        document.getElementById('averageRating').textContent = 'N/A';
+async function loadEarnings() {
+    console.log("Loading earnings data...");
+    if (currentVendor && currentVendor.id) {
+        try {
+            // Fetch the latest vendor data to get earnings info
+            const vendorRef = db.collection('users').doc(currentVendor.id);
+            const vendorDoc = await vendorRef.get();
+
+            if (vendorDoc.exists) {
+                const vendorData = vendorDoc.data();
+                // Update UI with fetched data, providing defaults if fields don't exist
+                document.getElementById('totalEarnings').textContent = `KES ${(vendorData.totalEarnedValue || 0).toFixed(2)}`;
+                document.getElementById('completedOrders').textContent = `${vendorData.completedOrdersCount || 0}`;
+                document.getElementById('averageRating').textContent = vendorData.averageRating ? vendorData.averageRating.toFixed(1) : 'N/A';
+            } else {
+                console.warn("Vendor document not found for earnings calculation.");
+                document.getElementById('totalEarnings').textContent = 'KES 0.00';
+                document.getElementById('completedOrders').textContent = '0';
+                document.getElementById('averageRating').textContent = 'N/A';
+            }
+        } catch (error) {
+            console.error("Error loading earnings data:", error);
+            showToast("Could not load earnings data.", "error");
+             document.getElementById('totalEarnings').textContent = 'Error';
+             document.getElementById('completedOrders').textContent = 'Error';
+             document.getElementById('averageRating').textContent = 'Error';
+        }
+    } else {
+         console.warn("Cannot load earnings, current vendor data not available.");
+         document.getElementById('totalEarnings').textContent = 'N/A';
+         document.getElementById('completedOrders').textContent = 'N/A';
+         document.getElementById('averageRating').textContent = 'N/A';
     }
 }
 
@@ -258,15 +285,6 @@ async function loadMyOrders() {
             myOrdersList.appendChild(orderCard);
         });
 
-        // Add event delegation for dynamically added buttons IF the above direct binding fails
-        myOrdersList.addEventListener('click', function(event) {
-            // Check if the clicked element is a button with data-order-id attribute
-            if (event.target.tagName === 'BUTTON' && event.target.hasAttribute('data-order-id')) {
-                console.log(`[My Orders] Event delegation: Button clicked for order ${event.target.dataset.orderId} with next status: ${event.target.dataset.nextStatus}`);
-                updateOrderStatus(event.target.dataset.orderId, event.target.dataset.nextStatus);
-            }
-        });
-
     } catch (error) {
         console.error('Error loading my orders:', error);
         // Display a user-friendly message in the UI as well
@@ -274,7 +292,7 @@ async function loadMyOrders() {
         if (myOrdersList) {
             myOrdersList.innerHTML = '<div class="col-12 text-danger"><p>Error loading your assigned orders. Please try again later.</p></div>';
         } else {
-            alert('Error loading your orders. Please try again.'); // Fallback alert
+            showToast('Error loading your orders. Please try again.', 'error'); // Fallback toast
         }
     }
 }
@@ -329,8 +347,21 @@ auth.onAuthStateChanged(async (user) => {
                 
                 // Use fields from the user document
                 vendorNameElement.textContent = currentVendor.name || user.email;
-                availabilityToggle.checked = currentVendor.status === 'available'; // Assuming status is stored here
-                radiusInput.value = currentVendor.radius || 5; // Assuming radius is stored here
+                availabilityToggle.checked = currentVendor.status === 'available'; 
+                
+                // Update the availability status text
+                if (availabilityStatusText) {
+                    if (currentVendor.status === 'available') {
+                        availabilityStatusText.textContent = 'Available';
+                    } else if (currentVendor.status === 'busy') {
+                        availabilityStatusText.textContent = 'Busy';
+                    } else {
+                        // Handle other statuses like 'unavailable' (suspended) if needed
+                        availabilityStatusText.textContent = formatStatus(currentVendor.status); 
+                    }
+                }
+                
+                radiusInput.value = currentVendor.radius || 5; 
                 loadAvailableOrders();
             } else {
                 // User not found in 'users' or role is not 'vendor' - Redirect!
@@ -374,7 +405,6 @@ async function loadAvailableOrders() {
         // Ensure currentVendor and its location are defined before proceeding
         if (!currentVendor || !currentVendor.location || typeof currentVendor.location.latitude !== 'number' || typeof currentVendor.location.longitude !== 'number') {
             console.warn("Vendor location is not set or invalid. Cannot calculate distances.");
-            // Apply consistent styling to the message
             ordersList.innerHTML = '<div class="md:col-span-2 lg:col-span-3 text-center py-8 text-gray-500"><p>Please set your current location in Profile & Settings to see available orders near you.</p></div>';
             return; 
         }
@@ -382,21 +412,21 @@ async function loadAvailableOrders() {
         // Show loading state
         ordersList.innerHTML = '<div class="md:col-span-2 lg:col-span-3 text-center py-8 text-gray-500"><p>Loading available orders...</p></div>';
 
-        // Fetch all pending orders
+        // Fetch orders that are 'pending' AND 'paid'
         const ordersSnapshot = await db.collection('orders')
             .where('status', '==', 'pending')
+            .where('paymentStatus', '==', 'paid') // Add this condition
             .get();
 
-        console.log(`[loadAvailableOrders] Found ${ordersSnapshot.size} pending orders`);
+        console.log(`[loadAvailableOrders] Found ${ordersSnapshot.size} pending and paid orders`);
 
-        // Check if there are ANY pending orders at all
+        // Check if there are ANY suitable orders at all
         if (ordersSnapshot.empty) {
-            ordersList.innerHTML = '<div class="md:col-span-2 lg:col-span-3 text-center py-8 text-gray-500"><p>No available orders at this time.</p></div>';
+            ordersList.innerHTML = '<div class="md:col-span-2 lg:col-span-3 text-center py-8 text-gray-500"><p>No available paid orders at this time.</p></div>'; // Updated message
             return;
         }
 
         ordersList.innerHTML = ''; // Clear existing orders / loading message
-        // const availableOrders = []; - Replaced with two lists
         const ordersInRadius = [];
         const ordersOutsideOrNoCoords = [];
         const vendorRadius = currentVendor.radius || 5; // Use default radius if not set
@@ -456,8 +486,8 @@ async function loadAvailableOrders() {
         });
 
     } catch (error) {
-        console.error('Error loading orders:', error);
-        alert('Error loading orders. Please try again.');
+        console.error('Error loading available orders:', error);
+        showToast('Error loading orders. Please try again.', 'error'); // Use toast instead of alert
     }
 }
 
@@ -484,6 +514,15 @@ function displayOrderCard(order, orderId, distanceText) {
     const statusElement = orderCard.querySelector('.order-status');
     const currentStatus = order.status || 'pending'; // Default to pending if missing
     statusElement.textContent = formatStatus(currentStatus);
+
+    // --- Add Price Display ---
+    const detailsContainer = orderCard.querySelector('.text-sm.space-y-1'); // Find the details container
+    if (detailsContainer) {
+        const priceElement = document.createElement('p');
+        priceElement.innerHTML = `<strong>Price:</strong> KES <span class="price">${order.totalPrice ? order.totalPrice.toFixed(2) : 'N/A'}</span>`;
+        detailsContainer.appendChild(priceElement);
+    }
+    // --- End Price Display ---
 
     // Add accept order handler
     const acceptBtn = orderCard.querySelector('.accept-order');
@@ -520,7 +559,6 @@ function displayOrderCard(order, orderId, distanceText) {
 async function acceptOrder(orderId) {
     console.log(`[acceptOrder] Function called for order ${orderId}`);
     try {
-        // First check if the order exists and is in pending status
         const orderRef = db.collection('orders').doc(orderId);
         const orderDoc = await orderRef.get();
         
@@ -532,81 +570,66 @@ async function acceptOrder(orderId) {
         if (orderData.status !== 'pending') {
             throw new Error('Order is no longer available');
         }
-
-        // Check if the order was created by an admin user
-        let isAdminOrder = false;
-        if (orderData.userId) {
-            try {
-                const userDoc = await db.collection('users').doc(orderData.userId).get();
-                if (userDoc.exists && userDoc.data().role === 'admin') {
-                    isAdminOrder = true;
-                    console.log('Order was created by an admin user');
-                }
-            } catch (error) {
-                console.warn('Could not check if order was created by admin:', error);
-            }
+        if (orderData.paymentStatus !== 'paid') { // Also check if paid
+             throw new Error('Order payment is still pending.');
         }
 
-        // Update the order status
-        try {
-            await orderRef.update({
+        const confirmed = await showConfirm(
+            'Accept Order',
+            'Are you sure you want to accept this order? You will be marked as busy until the order is completed.'
+        );
+
+        if (!confirmed) {
+            showToast('Order acceptance cancelled', 'info');
+            return;
+        }
+
+        // Update order status to assigned
+        await orderRef.update({
             status: 'assigned',
             assignedVendorId: currentVendor.id,
             assignedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-            // Update vendor status
-        await db.collection('users').doc(currentVendor.id).update({
-            status: 'busy'
-        });
-
-            // Update UI
+        // Update vendor status to busy
+        await db.collection('users').doc(currentVendor.id).update({ status: 'busy' });
+        currentVendor.status = 'busy'; // Update local state
         availabilityToggle.checked = false;
-        loadAvailableOrders();
-        alert('Order accepted successfully!');
-        } catch (updateError) {
-            console.error('Error updating order:', updateError);
-            
-            // If this is an admin-created order and we're getting a permission error,
-            // try an alternative approach
-            if (isAdminOrder && updateError.code === 'permission-denied') {
-                console.log('Attempting alternative approach for admin-created order');
-                
-                // Try to update just the vendor status first
-                await db.collection('users').doc(currentVendor.id).update({
-                    status: 'busy'
-                });
-                
-                // Then notify the user that they need admin assistance
-                alert('This order was created by an administrator. Please contact support to complete the acceptance process.');
-                
-                // Update UI
-                availabilityToggle.checked = false;
-                loadAvailableOrders();
-            } else {
-                throw updateError; // Re-throw if it's not an admin order or a different error
-            }
-        }
+         if (availabilityStatusText) {
+             availabilityStatusText.textContent = 'Busy';
+         }
+
+        showToast('Order accepted successfully!', 'success');
+        loadAvailableOrders(); // Refresh available orders list
+        loadMyOrders(); // Load the newly accepted order into 'My Orders'
+
     } catch (error) {
-        console.error('Error accepting order:', error);
-        alert(error.message || 'Error accepting order. Please try again.');
+        console.error("Error accepting order:", error);
+        showToast(`Error accepting order: ${error.message}`, 'error');
+        loadAvailableOrders(); // Refresh list in case order status changed elsewhere
     }
 }
 
 // Toggle availability - Update status IN THE USER DOCUMENT
 availabilityToggle.addEventListener('change', async (e) => {
+    const isAvailable = e.target.checked;
+    const newStatus = isAvailable ? 'available' : 'busy';
+    console.log(`Setting status to: ${newStatus}`);
+    
     try {
-        await db.collection('users').doc(currentVendor.id).update({
-            status: e.target.checked ? 'available' : 'busy'
-        });
-
-        if (e.target.checked) {
-            loadAvailableOrders();
+        await db.collection('users').doc(currentVendor.id).update({ status: newStatus });
+        currentVendor.status = newStatus; // Update local state
+        showToast(`Status updated to ${newStatus}`, 'success');
+        
+        // Update the availability status text
+        if (availabilityStatusText) {
+            availabilityStatusText.textContent = isAvailable ? 'Available' : 'Busy';
         }
     } catch (error) {
-        console.error('Error updating availability:', error);
-        alert('Error updating availability. Please try again.');
-        e.target.checked = !e.target.checked; // Revert toggle
+        console.error('Error updating availability status:', error);
+        showToast('Error updating status. Please try again.', 'error');
+        // Revert the toggle on error
+        e.target.checked = !isAvailable; 
     }
 });
 
@@ -629,18 +652,31 @@ radiusInput.addEventListener('change', async (e) => {
     try {
         const newRadius = parseFloat(e.target.value);
         if (isNaN(newRadius) || newRadius < 1 || newRadius > 100) {
-            alert('Please enter a valid radius between 1 and 100 kilometers.');
+            showToast('Please enter a valid radius between 1 and 100 kilometers.', 'warning');
             e.target.value = currentVendor.radius || 5;
             return;
         }
+
+        const confirmed = await showConfirm(
+            'Update Service Radius',
+            `Are you sure you want to change your service radius to ${newRadius} kilometers?`
+        );
+
+        if (!confirmed) {
+            e.target.value = currentVendor.radius || 5;
+            showToast('Radius update cancelled', 'info');
+            return;
+        }
+
         await db.collection('users').doc(currentVendor.id).update({
             radius: newRadius
         });
         currentVendor.radius = newRadius; // Update local state
         loadAvailableOrders();
+        showToast(`Service radius updated to ${newRadius} kilometers`, 'success');
     } catch (error) {
         console.error('Error updating radius:', error);
-        alert('Error updating radius. Please try again.');
+        showToast('Error updating radius. Please try again.', 'error');
         e.target.value = currentVendor.radius || 5;
     }
 });
@@ -651,42 +687,96 @@ async function updateOrderStatus(orderId, newStatus) {
     
     if (!orderId || !newStatus) {
         console.error(`[updateOrderStatus] Missing required parameters: orderId=${orderId}, newStatus=${newStatus}`);
-        alert('Error: Missing order information. Please try again.');
+        showToast('Error: Missing order information. Please try again.', 'error');
         return;
     }
     
     const orderRef = db.collection('orders').doc(orderId);
 
     try {
-        // First check if the order exists
         const orderDoc = await orderRef.get();
         if (!orderDoc.exists) {
             console.error(`[updateOrderStatus] Order ${orderId} does not exist`);
-            alert('Error: Order not found. It may have been deleted.');
+            showToast('Error: Order not found. It may have been deleted.', 'error');
             return;
         }
         
-        // Check if the order is assigned to the current vendor
         const orderData = orderDoc.data();
+        console.log(`[updateOrderStatus] Order data:`, orderData);
+        console.log(`[updateOrderStatus] Payment status: ${orderData.paymentStatus}, Total price: ${orderData.totalPrice}`);
+        
         if (orderData.assignedVendorId !== currentVendor.id) {
             console.error(`[updateOrderStatus] Order ${orderId} is not assigned to current vendor`);
-            alert('Error: This order is not assigned to you.');
+            showToast('Error: This order is not assigned to you.', 'error');
             return;
         }
+
+        // Prepare update data
+        const updateData = {
+            status: newStatus,
+            [`${newStatus}Timestamp`]: firebase.firestore.FieldValue.serverTimestamp()
+        };
         
         // Update the order status
-        await orderRef.update({
-            status: newStatus,
-            // Optionally add timestamps for status changes
-            [`${newStatus}Timestamp`]: firebase.firestore.FieldValue.serverTimestamp() 
-        });
-        console.log(`[updateOrderStatus] Order ${orderId} status updated successfully.`);
+        await orderRef.update(updateData);
+        console.log(`[updateOrderStatus] Order ${orderId} status updated to ${newStatus}.`);
+
+        // --- Earnings Simulation Logic ---
+        if (newStatus === 'completed' && orderData.paymentStatus === 'paid') {
+            console.log(`[updateOrderStatus] Order ${orderId} completed and paid. Updating vendor earnings...`);
+            console.log(`[updateOrderStatus] Current vendor earnings: completedOrdersCount=${currentVendor.completedOrdersCount}, totalEarnedValue=${currentVendor.totalEarnedValue}`);
+            console.log(`[updateOrderStatus] Order total price: ${orderData.totalPrice}`);
+            
+            const vendorRef = db.collection('users').doc(currentVendor.id);
+            const increment = firebase.firestore.FieldValue.increment; // Shortcut
+
+            try {
+                // Use a transaction to ensure both updates happen atomically
+                await db.runTransaction(async (transaction) => {
+                    // Get the current vendor document
+                    const vendorDoc = await transaction.get(vendorRef);
+                    if (!vendorDoc.exists) {
+                        throw new Error("Vendor document does not exist");
+                    }
+                    
+                    const vendorData = vendorDoc.data();
+                    const currentCompletedOrders = vendorData.completedOrdersCount || 0;
+                    const currentEarnedValue = vendorData.totalEarnedValue || 0;
+                    
+                    console.log(`[updateOrderStatus] Transaction: Current vendor data: completedOrdersCount=${currentCompletedOrders}, totalEarnedValue=${currentEarnedValue}`);
+                    
+                    // Update the vendor document
+                    transaction.update(vendorRef, {
+                        completedOrdersCount: increment(1),
+                        totalEarnedValue: increment(orderData.totalPrice || 0)
+                    });
+                    
+                    console.log(`[updateOrderStatus] Transaction: Updating vendor ${currentVendor.id} with increment(1) for completedOrdersCount and increment(${orderData.totalPrice || 0}) for totalEarnedValue`);
+                });
+                
+                console.log(`[updateOrderStatus] Vendor ${currentVendor.id} earnings updated successfully via transaction.`);
+                
+                // Update local currentVendor object
+                currentVendor.completedOrdersCount = (currentVendor.completedOrdersCount || 0) + 1;
+                currentVendor.totalEarnedValue = (currentVendor.totalEarnedValue || 0) + (orderData.totalPrice || 0);
+                console.log(`[updateOrderStatus] Updated local earnings: completedOrdersCount=${currentVendor.completedOrdersCount}, totalEarnedValue=${currentVendor.totalEarnedValue}`);
+                
+                // Refresh earnings display
+                loadEarnings();
+            } catch (earningsError) {
+                console.error("[updateOrderStatus] Error updating vendor earnings:", earningsError);
+                console.error("[updateOrderStatus] Error details:", earningsError.message);
+                // Don't show error to user for this background update, just log it
+            }
+        } else {
+            console.log(`[updateOrderStatus] Not updating earnings. Status=${newStatus}, paymentStatus=${orderData.paymentStatus}`);
+        }
+        // --- End Earnings Simulation ---
         
-        // Refresh the 'My Orders' list to show the change
-        loadMyOrders(); 
+        loadMyOrders(); // Refresh the 'My Orders' list
     } catch (error) {
         console.error("[updateOrderStatus] Error updating order status:", error);
-        alert(`Failed to update order status: ${error.message}`);
+        showToast(`Failed to update order status: ${error.message}`, 'error');
     }
 }
 
@@ -736,21 +826,21 @@ if (updateLocationBtn) {
     updateLocationBtn.addEventListener('click', async () => {
         if (!currentVendor || !currentVendor.id) {
             console.error("Vendor info not available for location update.");
-            if(locationErrorElement) locationErrorElement.textContent = 'Error: Vendor data not loaded.';
+            showToast('Error: Vendor data not loaded.', 'error');
             return;
         }
 
         // Check if Firebase is properly initialized
         if (!firebase || !firebase.apps || firebase.apps.length === 0) {
             console.error("Firebase is not properly initialized.");
-            if(locationErrorElement) locationErrorElement.textContent = 'Error: Firebase is not properly initialized. Please refresh the page.';
+            showToast('Error: Firebase is not properly initialized. Please refresh the page.', 'error');
             return;
         }
 
         // Check if Firestore is available
         if (!firebase.firestore) {
             console.error("Firestore is not available.");
-            if(locationErrorElement) locationErrorElement.textContent = 'Error: Firestore is not available. Please refresh the page.';
+            showToast('Error: Firestore is not available. Please refresh the page.', 'error');
             return;
         }
         
@@ -758,21 +848,20 @@ if (updateLocationBtn) {
         const hasPermission = await checkVendorPermissions();
         if (!hasPermission) {
             console.error("Vendor does not have permission to update location.");
-            if(locationErrorElement) locationErrorElement.textContent = 'Error: You do not have permission to update your location.';
+            showToast('Error: You do not have permission to update your location.', 'error');
             return;
         }
 
         if (!navigator.geolocation) {
             console.error("Geolocation is not supported by this browser.");
-            if(locationErrorElement) locationErrorElement.textContent = 'Geolocation is not supported by your browser.';
+            showToast('Geolocation is not supported by your browser.', 'error');
             return;
         }
 
         console.log("Attempting to get current location...");
         updateLocationBtn.disabled = true;
         updateLocationBtn.textContent = 'Getting Location...';
-        if(locationErrorElement) locationErrorElement.textContent = '';
-        if(locationSuccessElement) locationSuccessElement.textContent = '';
+        showToast('Getting your current location...', 'info');
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
@@ -815,7 +904,7 @@ if (updateLocationBtn) {
                     currentVendor.location = newLocation;
                     if(profileLocationElement) profileLocationElement.textContent = 
                         `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`;
-                    if(locationSuccessElement) locationSuccessElement.textContent = 'Location updated successfully!';
+                    showToast('Location updated successfully!', 'success');
                     
                     // Reload available orders as location has changed
                     loadAvailableOrders();
@@ -829,14 +918,11 @@ if (updateLocationBtn) {
                     
                     // Check for specific error types
                      if (error.code === 'permission-denied') {
-                        if(locationErrorElement) locationErrorElement.textContent = 
-                            'Permission denied. Please make sure you are logged in as a vendor.';
+                        showToast('Permission denied. Please make sure you are logged in as a vendor.', 'error');
                     } else if (error.code === 'unavailable' || error.message.includes('CORS')) {
-                        if(locationErrorElement) locationErrorElement.textContent = 
-                            'Network error. Please check your internet connection and try again.';
+                        showToast('Network error. Please check your internet connection and try again.', 'error');
                     } else {
-                        if(locationErrorElement) locationErrorElement.textContent = 
-                            `Error updating location: ${error.message}`;
+                        showToast(`Error updating location: ${error.message}`, 'error');
                     }
                     
                     // Still update the local UI even if Firestore update fails
@@ -859,7 +945,7 @@ if (updateLocationBtn) {
             },
             (error) => {
                 console.error("Geolocation error:", error);
-                if(locationErrorElement) locationErrorElement.textContent = `Geolocation error: ${error.message}`;
+                showToast(`Geolocation error: ${error.message}`, 'error');
                 updateLocationBtn.disabled = false;
                 updateLocationBtn.textContent = 'Update My Current Location';
             },

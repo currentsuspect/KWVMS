@@ -23,12 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadVendors(); // Proceed to load vendor data
                 } else {
                     console.warn("User is not an admin. Redirecting...");
-                    alert("Access Denied: You do not have permission to view this page.");
+                    showToast("Access Denied: You do not have permission to view this page.", "error");
                     window.location.href = 'index.html'; // Redirect non-admins
                 }
             } catch (error) {
                 console.error("Error checking admin role:", error);
                 vendorListContainer.innerHTML = '<p class="p-6 text-red-600">Error verifying your permissions. Please try again later.</p>';
+                showToast("Error verifying your permissions. Please try again later.", "error");
             }
         } else {
             console.log("Admin vendors page: No user authenticated. Redirecting to login...");
@@ -126,11 +127,11 @@ async function handleApproveVendor(vendorId) {
         await vendorRef.update({ 
             status: 'available'
         });
-        alert('Vendor approved successfully!');
+        showToast('Vendor approved successfully!', 'success');
         loadVendors(); // Refresh the list
     } catch (error) {
         console.error("Error approving vendor:", error);
-        alert(`Failed to approve vendor: ${error.message}. Check Firestore rules.`);
+        showToast(`Failed to approve vendor: ${error.message}. Check Firestore rules.`, 'error');
     }
 }
 
@@ -145,10 +146,10 @@ async function handleSuspendVendor(vendorId, suspend) {
             accountSuspended: suspend,
             ...(suspend && { status: 'unavailable' })
         });
-        alert(`Vendor ${action}ed successfully!`);
+        showToast(`Vendor ${action}ed successfully!`, 'success');
         loadVendors(); // Refresh the list
     } catch (error) {
         console.error(`Error ${action}ing vendor:`, error);
-        alert(`Failed to ${action} vendor: ${error.message}. Check Firestore rules.`);
+        showToast(`Failed to ${action} vendor: ${error.message}. Check Firestore rules.`, 'error');
     }
 } 

@@ -255,6 +255,8 @@
     
     <!-- Custom Scripts -->
     <script src="js/firebase-config.js"></script>
-    <script src="vendor-dashboard.js"></script>
+    <!-- Add defer to ensure scripts run after HTML parsing and in order -->
+    <script src="js/ui-utils.js" defer></script>
+    <script src="vendor-dashboard.js" defer></script>
 </body>
 </html> 

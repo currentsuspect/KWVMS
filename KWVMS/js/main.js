@@ -20,7 +20,8 @@ import {
     query,
     where,
     orderBy,
-    getDocs
+    getDocs,
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // REMOVED Firebase Configuration - Now in js/firebase-config.js
@@ -497,40 +498,148 @@ async function handlePlaceOrder(event) {
     const user = auth.currentUser;
     if (!user) {
         console.error("User not logged in, cannot place order.");
+        showToast("You must be logged in to place an order.", "error");
         return;
     }
 
-    const quantity = document.getElementById('order-quantity-slider').value; // Get value from slider
+    const quantity = document.getElementById('order-quantity-slider').value;
     const locationDetails = document.getElementById('order-location').value;
     const errorDiv = document.getElementById('order-error');
-    errorDiv.textContent = ''; // Clear previous error
+    errorDiv.textContent = '';
     errorDiv.classList.add('hidden');
 
     console.log(`Placing order: ${quantity}L, Location: ${locationDetails.substring(0, 30)}...`);
 
     try {
-        // Add order to Firestore
+        // 1. Fetch current price per liter from settings
+        const settingsRef = doc(db, "settings", "main");
+        const settingsSnap = await getDoc(settingsRef);
+        let pricePerLiter = 1.0; // Default price if settings not found
+        if (settingsSnap.exists() && settingsSnap.data().pricePerLiter) {
+            pricePerLiter = settingsSnap.data().pricePerLiter;
+        } else {
+            console.warn("Admin settings (pricePerLiter) not found or invalid. Using default price: KES 1.00/L");
+        }
+
+        // 2. Calculate total price
+        const parsedQuantity = parseInt(quantity, 10);
+        const totalPrice = parsedQuantity * pricePerLiter;
+
+        // 3. Add order to Firestore with payment details
         const ordersCollection = collection(db, "orders");
-        await addDoc(ordersCollection, {
+        const newOrderRef = await addDoc(ordersCollection, {
             userId: user.uid,
-            quantityLiters: parseInt(quantity, 10),
-            location: { 
-                address: locationDetails 
-            },
+            quantityLiters: parsedQuantity,
+            location: { address: locationDetails },
             status: 'pending', // Initial status
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            pricePerLiter: pricePerLiter,
+            totalPrice: totalPrice,
+            paymentStatus: 'pending', // Payment status starts as pending
+            paymentMethod: 'mock_online' // Indicate it's a simulated online payment
         });
 
-        console.log("Order placed successfully!");
-        alert("Order placed successfully!"); // Simple feedback
+        console.log("Order placed successfully! Order ID:", newOrderRef.id);
+        showToast("Order placed successfully! Proceeding to payment.", "success");
 
-        // Go back to user dashboard
-        setupFirestoreListener(user); 
+        // 4. Transition to mock payment step instead of going back to dashboard
+        showMockPaymentScreen(newOrderRef.id, totalPrice);
+
+        // Clear the order form (optional) - Commented out as elements might be removed by UI transition
+        /*
+        const orderForm = document.getElementById('order-form');
+        const quantityDisplay = document.getElementById('order-quantity-display');
+        const placeOrderSection = document.getElementById('place-order-section');
+        if (orderForm) orderForm.reset();
+        if (quantityDisplay) quantityDisplay.textContent = '50'; // Reset slider display
+        if (placeOrderSection) placeOrderSection.classList.add('hidden'); // Hide form
+        */
 
     } catch (error) {
         console.error("Error placing order:", error);
         errorDiv.textContent = `Error: ${error.message}`;
         errorDiv.classList.remove('hidden');
+        showToast(`Error placing order: ${error.message}`, "error");
+    }
+}
+
+// --- Mock Payment Screen Function ---
+function showMockPaymentScreen(orderId, amount) {
+    // Find or create the payment screen container
+    let paymentScreen = document.getElementById('mock-payment-screen');
+    if (!paymentScreen) {
+        paymentScreen = document.createElement('div');
+        paymentScreen.id = 'mock-payment-screen';
+        paymentScreen.className = 'fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4'; // Full screen overlay
+        appContent.appendChild(paymentScreen); // Append to main app content area
+    }
+
+    // Populate the payment screen
+    paymentScreen.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-xl max-w-md w-full text-center">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Confirm Payment</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                Your order total is <strong class="text-lg">KES ${amount.toFixed(2)}</strong>.
+            </p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                (This is a simulated payment for a school project. No real money will be charged.)
+            </p>
+            <div class="space-y-4">
+                <button id="confirm-payment-btn" class="w-full px-6 py-3 text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Pay KES ${amount.toFixed(2)} Now (Mock)
+                </button>
+                <button id="cancel-payment-btn" class="w-full px-6 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 focus:outline-none">
+                    Cancel Payment
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Add event listeners
+    document.getElementById('confirm-payment-btn').addEventListener('click', () => handleMockPayment(orderId));
+    document.getElementById('cancel-payment-btn').addEventListener('click', () => {
+        paymentScreen.remove(); // Remove the payment screen
+        showToast('Payment cancelled.', 'warning');
+        setupFirestoreListener(auth.currentUser); // Go back to user dashboard
+    });
+
+    paymentScreen.classList.remove('hidden');
+}
+
+// --- Function to handle the mock payment confirmation ---
+async function handleMockPayment(orderId) {
+    console.log(`Processing mock payment for order ID: ${orderId}`);
+    const paymentScreen = document.getElementById('mock-payment-screen');
+    const confirmBtn = document.getElementById('confirm-payment-btn');
+    const cancelBtn = document.getElementById('cancel-payment-btn');
+
+    // Disable buttons during processing
+    if(confirmBtn) confirmBtn.disabled = true;
+    if(cancelBtn) cancelBtn.disabled = true;
+    if(confirmBtn) confirmBtn.textContent = 'Processing...';
+
+    try {
+        // Update the order status in Firestore
+        const orderRef = doc(db, "orders", orderId);
+        await updateDoc(orderRef, {
+            paymentStatus: 'paid', // Set payment status to 'paid'
+            paidAt: serverTimestamp() // Optional: Timestamp when paid
+        });
+
+        console.log(`Mock payment successful for order ID: ${orderId}`);
+        showToast('Payment successful! Your order is confirmed.', 'success');
+
+        // Remove payment screen and go back to dashboard
+        if(paymentScreen) paymentScreen.remove();
+        setupFirestoreListener(auth.currentUser);
+
+    } catch (error) {
+        console.error("Error processing mock payment:", error);
+        showToast(`Payment failed: ${error.message}`, 'error');
+        // Re-enable buttons on error
+        if(confirmBtn) confirmBtn.disabled = false;
+        if(cancelBtn) cancelBtn.disabled = false;
+        if(confirmBtn) confirmBtn.textContent = confirmBtn.textContent.replace('Processing...', 'Pay Now (Mock)'); // Reset text
     }
 }
 
@@ -802,4 +911,45 @@ async function loadUserOrderHistory(userId) {
             orderListElement.innerHTML = '<p class="text-red-600 text-sm p-4">Could not load order history. Please try again later.</p>';
         }
     }
+}
+
+// Toast notification system
+function showToast(message, type = 'info') {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'fixed top-4 right-4 z-50 flex flex-col gap-2';
+        document.body.appendChild(toastContainer);
+    }
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `px-4 py-2 rounded-lg shadow-lg text-white transform transition-all duration-300 translate-x-full ${
+        type === 'success' ? 'bg-green-500' :
+        type === 'error' ? 'bg-red-500' :
+        type === 'warning' ? 'bg-yellow-500' :
+        'bg-blue-500'
+    }`;
+    toast.textContent = message;
+
+    // Add toast to container
+    toastContainer.appendChild(toast);
+
+    // Animate in
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+    }, 100);
+
+    // Remove toast after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            toastContainer.removeChild(toast);
+            if (toastContainer.children.length === 0) {
+                document.body.removeChild(toastContainer);
+            }
+        }, 300);
+    }, 3000);
 }

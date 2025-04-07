@@ -23,12 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadOrders(); // Proceed to load order data
                 } else {
                     console.warn("User is not an admin. Redirecting...");
-                    alert("Access Denied: You do not have permission to view this page.");
+                    showToast("Access Denied: You do not have permission to view this page.", "error");
                     window.location.href = 'index.html'; // Redirect non-admins
                 }
             } catch (error) {
                 console.error("Error checking admin role:", error);
                 orderListContainer.innerHTML = '<p class="p-6 text-red-600">Error verifying your permissions. Please try again later.</p>';
+                showToast("Error verifying your permissions. Please try again later.", "error");
             }
         } else {
             console.log("Admin orders page: No user authenticated. Redirecting to login...");

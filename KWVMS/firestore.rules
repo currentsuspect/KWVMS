@@ -20,7 +20,10 @@
                              .hasOnly(['location', 'lastLocationUpdate'])) ||
                            // Allow updating status and radius
                            request.resource.data.diff(resource.data).affectedKeys()
-                             .hasOnly(['status', 'radius', 'lastUpdated'])
+                             .hasOnly(['status', 'radius', 'lastUpdated']) ||
+                           // Allow updating earnings fields
+                           request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['completedOrdersCount', 'totalEarnedValue'])
                          );
         }
 
@@ -53,8 +56,12 @@
                           resource.data.assignedVendorId == request.auth.uid && // Can only update THEIR assigned orders
                           resource.data.status in ['assigned', 'in_progress'] && // Check current status
                           request.resource.data.diff(resource.data).affectedKeys()
-                            .hasOnly(['status', 'startedDeliveryAt', 'completedAt', 'estimatedDeliveryTime', 'actualDeliveryTime'])) || // Fields for status changes
-                            
+                            .hasOnly(['status', 
+                                      'in_progressTimestamp', 'completedTimestamp',
+                                      'startedDeliveryAt', 'completedAt',
+                                      'estimatedDeliveryTime', 'actualDeliveryTime']) && // Fields for status changes
+                          request.resource.data.status in ['in_progress', 'completed']) || // Ensure status is valid
+                          
                          // User cancels a PENDING order (future use example)
                          (resource.data.userId == request.auth.uid && 
                           resource.data.status == 'pending' && // Can only cancel pending orders

@@ -29,12 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     settingsForm.addEventListener('submit', handleSaveSettings);
                 } else {
                     console.warn("User is not an admin. Redirecting...");
-                    alert("Access Denied: You do not have permission to view this page.");
+                    showToast("Access Denied: You do not have permission to view this page.", "error");
                     window.location.href = 'index.html'; // Redirect non-admins
                 }
             } catch (error) {
                 console.error("Error checking admin role:", error);
-                setMessage('Error verifying your permissions. Please try again later.', true);
+                showToast("Error verifying your permissions. Please try again later.", "error");
             }
         } else {
             console.log("Admin settings page: No user authenticated. Redirecting to login...");
@@ -48,21 +48,15 @@ async function loadSettings() {
     try {
         const settingsDoc = await settingsRef.get();
         if (settingsDoc.exists) {
-            const settings = settingsDoc.data();
-            priceInput.value = settings.pricePerLiter || '';
-            console.log("Settings loaded:", settings);
+            const data = settingsDoc.data();
+            priceInput.value = data.pricePerLiter || 0;
         } else {
             console.log("No settings document found. Using defaults.");
-            // Can set default placeholder values if needed
-            priceInput.placeholder = "1.00"; // Example default
+            priceInput.value = 0;
         }
     } catch (error) {
         console.error("Error loading settings:", error);
-        setMessage('Could not load current settings.', true);
-        // Handle permission errors if rules aren't set yet
-        if (error.code === 'permission-denied') {
-             setMessage('Error: Insufficient permissions to load settings. Update Firestore rules.', true);
-        } 
+        showToast("Error loading settings. Please try again later.", "error");
     }
 }
 
@@ -72,11 +66,11 @@ async function handleSaveSettings(event) {
     const newPrice = parseFloat(priceInput.value);
 
     if (isNaN(newPrice) || newPrice < 0) {
-        setMessage('Please enter a valid positive price.', true);
+        showToast("Please enter a valid positive price.", "error");
         return;
     }
 
-    setMessage('Saving...', false);
+    showToast("Saving settings...", "info");
 
     try {
         // Use set with merge:true to create or update the document
@@ -85,15 +79,15 @@ async function handleSaveSettings(event) {
             lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
         
-        setMessage('Settings saved successfully!', false);
+        showToast("Settings saved successfully!", "success");
         console.log("Settings updated successfully.");
         
     } catch (error) {
         console.error("Error saving settings:", error);
-        setMessage('Failed to save settings. Please try again.', true);
+        showToast("Failed to save settings. Please try again.", "error");
         // Handle permission errors if rules aren't set yet
         if (error.code === 'permission-denied') {
-             setMessage('Error: Insufficient permissions to save settings. Update Firestore rules.', true);
+             showToast("Error: Insufficient permissions to save settings. Update Firestore rules.", "error");
         } 
     }
 }
