@@ -16,8 +16,17 @@
                        // Allow user to update their own doc if vendor (specific fields)
                        ( (request.auth.uid == userId && 
                           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
-                          request.resource.data.diff(resource.data).affectedKeys()
-                            .hasOnly(['status', 'radius', 'location', 'lastUpdated']) )
+                          (
+                            // Allow updating just location fields
+                            (request.resource.data.diff(resource.data).affectedKeys()
+                              .hasAny(['location', 'lastLocationUpdate']) && 
+                             request.resource.data.diff(resource.data).affectedKeys()
+                              .hasOnly(['location', 'lastLocationUpdate'])) ||
+                            // Allow updating status and radius
+                            request.resource.data.diff(resource.data).affectedKeys()
+                              .hasOnly(['status', 'radius', 'lastUpdated'])
+                          )
+                         )
                          ||
                          // Allow admin to update specific fields (e.g., role, status - add more as needed)
                          ( get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
