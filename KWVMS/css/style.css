@@ -1,0 +1,48 @@
+/* Dashboard Styles */
+.dashboard-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.card {
+    background-color: #f9f9f9; /* Light background for cards */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section h3,
+.actions-section h3 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.profile-section p {
+    margin: 8px 0;
+}
+
+.profile-section strong {
+    display: inline-block;
+    min-width: 60px; /* Align labels somewhat */
+}
+
+.actions-section button {
+    margin-right: 10px;
+    margin-bottom: 10px; /* Add space below buttons */
+}
+
+.logout-section {
+    margin-top: 20px;
+    text-align: right;
+}
+
+/* Style disabled buttons */
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

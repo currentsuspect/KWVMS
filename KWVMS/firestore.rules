@@ -1,0 +1,62 @@
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+
+        // Rules for users collection
+        match /users/{userId} {
+          // Allow users to read/write their own document
+          allow read: if request.auth != null && request.auth.uid == userId;
+          // Allow users to create their own document (registration)
+          allow create: if request.auth != null && request.auth.uid == userId;
+          // Allow vendors to update specific fields (status, radius, location) in their own document
+          allow update: if request.auth != null && request.auth.uid == userId && 
+                         // Check the role of the user making the request, not the incoming data
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
+                         request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['status', 'radius', 'location', 'lastUpdated']);
+        }
+
+        // Rules for orders collection
+        match /orders/{orderId} {
+          // Allow users to create their own orders
+          allow create: if request.auth != null && 
+                       request.resource.data.userId == request.auth.uid;
+          // Allow users to read their own orders, and vendors/admins to read any order
+          allow read: if request.auth != null && 
+                     (resource.data.userId == request.auth.uid || 
+                      (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['vendor', 'admin'])); // Allow admins too
+                       
+          // Allow specific updates based on role and order status
+          allow update: if request.auth != null && 
+                       (
+                         // Vendor accepts a PENDING order
+                         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
+                          resource.data.status == 'pending' && // <<< Check current status is pending
+                          request.resource.data.diff(resource.data).affectedKeys()
+                            .hasOnly(['status', 'assignedVendorId', 'assignedAt']) && // Fields for accepting
+                          request.resource.data.status == 'assigned' && // Ensure status is being set to 'assigned'
+                          request.resource.data.assignedVendorId == request.auth.uid) || // Ensure vendor assigns themselves
+
+                         // Vendor updates an ASSIGNED or IN_PROGRESS order (e.g., mark in progress/completed)
+                         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
+                          resource.data.assignedVendorId == request.auth.uid && // Can only update THEIR assigned orders
+                          resource.data.status in ['assigned', 'in_progress'] && // Check current status
+                          request.resource.data.diff(resource.data).affectedKeys()
+                            .hasOnly(['status', 'startedDeliveryAt', 'completedAt', 'estimatedDeliveryTime', 'actualDeliveryTime'])) || // Fields for status changes
+                            
+                         // User cancels a PENDING order (future use example)
+                         (resource.data.userId == request.auth.uid && 
+                          resource.data.status == 'pending' && // Can only cancel pending orders
+                          request.resource.data.diff(resource.data).affectedKeys()
+                            .hasOnly(['status']) &&
+                          request.resource.data.status == 'cancelled') // Example: Allow user to set status to 'cancelled'
+                       );
+        }
+
+        // Add rules for other collections (e.g., orders) later
+
+      }
+    }

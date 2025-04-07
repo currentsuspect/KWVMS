@@ -1,0 +1,70 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Project Description: Kajiado Water Vending Management System
+Overview
+
+This system is designed to facilitate water delivery in Kajiado using vendors who transport water via donkeys. The platform connects users (buyers) who need water, vendors (donkey water carriers) who deliver it, and an admin who manages orders, users, and vendors.
+Key Features
+
+    Admin Panel
+
+        Dashboard with analytics (e.g., total orders, active vendors, revenue)
+
+        Manage users (add, edit, delete, suspend)
+
+        Manage vendors (approve, track performance)
+
+        Set water pricing per liter
+
+        Monitor delivery status
+
+        View customer complaints and resolve issues
+
+    User Main Area
+
+        Create an account and log in
+
+        Order water by specifying location and quantity (e.g., 50L, 100L, etc.)
+
+        Track vendor arrival status (estimated time based on distance)
+
+        View order history
+
+        Contact vendor via chat
+
+        Rate and review vendors
+
+    Vendor Panel
+
+        Register as a vendor and get admin approval
+
+        Accept or decline orders
+
+        View assigned deliveries on a map
+
+        Mark deliveries as "In Progress" and "Completed"
+
+        Earnings tracking (commission-based or fixed pricing)
+
+        Chat with customers
+
+Technology Stack
+
+    Frontend: HTML, CSS, JavaScript (Vanilla JS or React if needed)
+
+    Backend: Firebase or a lightweight Node.js server (if needed)
+
+    Database: Firestore or JSON-based storage for order tracking
+
+UI/UX Considerations
+
+    Minimalist design for mobile and low-end devices
+
+    Interactive maps (if feasible) for tracking vendors
+
+    Dark and light mode support
+
+    Localized language support (Swahili and English)
