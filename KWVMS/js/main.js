@@ -343,21 +343,28 @@ function renderAdminPanel(user, userData) {
                     <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
                         <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Manage Vendors</h3>
                         <p class="text-sm text-gray-600 mb-4">Approve new vendors, track performance.</p>
-                        <button class="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled>Go (Soon)</button>
+                        <a href="admin-vendors.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Go to Vendor Management
+                        </a>
                     </div>
 
                     <!-- Manage Orders Card -->
                     <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
                         <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Manage Orders</h3>
                         <p class="text-sm text-gray-600 mb-4">View all orders, monitor status, resolve issues.</p>
-                        <button class="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled>Go (Soon)</button>
+                        <a href="admin-orders.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Go to Order Management
+                        </a>
                     </div>
 
                     <!-- Settings / Pricing Card -->
                     <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow duration-200">
                         <h3 class="text-lg font-semibold text-gray-800 mb-3 border-b pb-2">Settings / Pricing</h3>
                         <p class="text-sm text-gray-600 mb-4">Set water price per liter, manage system settings.</p>
-                        <button class="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled>Go (Soon)</button>
+                         <!-- Changed button to a styled link -->
+                         <a href="admin-settings.html" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Go to Settings
+                        </a>
                     </div>
                     
                 </div>

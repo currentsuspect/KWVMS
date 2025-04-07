@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - KWVMS Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
+            <h1 class="text-2xl font-bold text-gray-800">Order Management</h1>
+            <a href="index.html" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                &larr; Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Order List Container -->
+        <div id="orderListContainer" class="bg-white rounded-lg shadow overflow-hidden">
+            <!-- Order list will be loaded here by admin-orders.js -->
+            <p class="p-6 text-gray-500">Loading orders...</p>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="admin-orders.js"></script> 
+    <script src="js/main.js"></script> <!-- Include main.js for helper functions like formatStatus -->
+</body>
+</html> 
