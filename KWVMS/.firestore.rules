@@ -71,21 +71,19 @@
                             .hasOnly(['status', 
                                       'in_progressTimestamp', 'completedTimestamp',
                                       'startedDeliveryAt', 'completedAt',
-                                      'estimatedDeliveryTime', 'actualDeliveryTime'])) || // Fields for status changes
+                                      'estimatedDeliveryTime', 'actualDeliveryTime']) && // Fields for status changes
+                          request.resource.data.status in ['in_progress', 'completed']) || // Ensure status is valid
                             
                          // User cancels a PENDING order (future use example)
                          (resource.data.userId == request.auth.uid && 
                           resource.data.status == 'pending' && // Can only cancel pending orders
                           request.resource.data.diff(resource.data).affectedKeys()
                             .hasOnly(['status']) &&
-                          request.resource.data.status == 'cancelled') // Example: Allow user to set status to 'cancelled'
-                         
-                         // --- ADD Admin updates? ---
-                         // Example: Allow admin to change status or reassign vendor
-                         // || (
-                         //    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
-                         //    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'assignedVendorId']) 
-                         // )
+                          request.resource.data.status == 'cancelled') || // Example: Allow user to set status to 'cancelled'
+                          
+                         // Admin can update any order (for testing and management)
+                         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
                        );
         }
 
