@@ -576,6 +576,7 @@ function formatStatus(status) {
         .join(' ');
 }
 
+
 // Function to Load User's Order History
 async function loadUserOrderHistory(userId) {
     console.log("Loading order history for user:", userId);
@@ -605,8 +606,17 @@ async function loadUserOrderHistory(userId) {
             return;
         }
 
-        orderListElement.innerHTML = '';
+        // Add bulk actions container at the top
+        orderListElement.innerHTML = `
+            <div id="bulk-actions" class="p-4 border-b border-neutral-200 dark:border-neutral-700 hidden">
+                <button id="bulk-chat-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Chat with Selected Orders
+                </button>
+            </div>
+        `;
+
         let count = 0;
+        const selectedOrders = new Set();
 
         querySnapshot.forEach((doc) => {
             count++;
@@ -622,16 +632,31 @@ async function loadUserOrderHistory(userId) {
             const statusColors = getStatusColorClasses(order.status);
             const price = order.totalPrice ? `KES ${order.totalPrice.toFixed(2)}` : 'N/A';
             const quantity = order.quantityLiters ? `${order.quantityLiters} Liters` : 'N/A';
-            const vendorInfo = order.assignedVendorId ? `Vendor ID: ${order.assignedVendorId.substring(0, 6)}...` : 'Unassigned'; // Show partial vendor ID if assigned
+            const vendorInfo = order.assignedVendorId ? `Vendor ID: ${order.assignedVendorId.substring(0, 6)}...` : 'Unassigned';
             const locationEstimate = order.location && order.location.estimated ? 
                                      '<span class="text-xs italic text-warning-600 dark:text-warning-400">(Est. Loc.)</span>' : '';
             
-            // --- Improved HTML Structure --- 
+            // --- Improved HTML Structure with Selection and Chat --- 
             const orderItemHtml = `
                 <div class="p-4 border-b border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition duration-150 ease-in-out">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-                        <p class="text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-1 sm:mb-0">Order <span class="font-mono text-xs">#${order.id}</span> ${locationEstimate}</p>
-                        <span class="text-xs text-neutral-500 dark:text-neutral-400">${orderDateTime}</span>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" 
+                                   id="order-${order.id}" 
+                                   class="order-checkbox h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                   data-order-id="${order.id}">
+                            <p class="text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-1 sm:mb-0">
+                                Order <span class="font-mono text-xs">#${order.id}</span> ${locationEstimate}
+                            </p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-neutral-500 dark:text-neutral-400">${orderDateTime}</span>
+                            <button class="chat-btn px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                    data-order-id="${order.id}"
+                                    data-vendor-id="${order.assignedVendorId || ''}">
+                                Chat
+                            </button>
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1 text-sm">
                         <div>
@@ -642,21 +667,51 @@ async function loadUserOrderHistory(userId) {
                         <div><span class="font-medium text-neutral-700 dark:text-neutral-300">Price:</span> <span class="text-neutral-600 dark:text-neutral-400">${price}</span></div>
                         <div><span class="font-medium text-neutral-700 dark:text-neutral-300">Vendor:</span> <span class="text-neutral-600 dark:text-neutral-400 text-xs">${vendorInfo}</span></div>
                     </div>
-                    <!-- Optional: Add Details Button later -->
-                    <!-- 
-                    <div class="mt-2 text-right">
-                        <button class="text-xs text-primary-600 hover:underline">View Details</button>
-                    </div>
-                    -->
                 </div>
             `;
 
-            orderListElement.insertAdjacentHTML('beforeend', orderItemHtml); 
+            orderListElement.insertAdjacentHTML('beforeend', orderItemHtml);
         });
+
+        // Add event listeners for checkboxes
+        const checkboxes = orderListElement.querySelectorAll('.order-checkbox');
+        const bulkActions = document.getElementById('bulk-actions');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const orderId = e.target.dataset.orderId;
+                if (e.target.checked) {
+                    selectedOrders.add(orderId);
+                } else {
+                    selectedOrders.delete(orderId);
+                }
+                // Show/hide bulk actions based on selection
+                bulkActions.classList.toggle('hidden', selectedOrders.size === 0);
+            });
+        });
+
+        // Add event listeners for chat buttons
+        const chatButtons = orderListElement.querySelectorAll('.chat-btn');
+        chatButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const orderId = e.target.dataset.orderId;
+                const vendorId = e.target.dataset.vendorId;
+                openChat(orderId, vendorId);
+            });
+        });
+
+        // Add event listener for bulk chat button
+        const bulkChatBtn = document.getElementById('bulk-chat-btn');
+        if (bulkChatBtn) {
+            bulkChatBtn.addEventListener('click', () => {
+                if (selectedOrders.size > 0) {
+                    openBulkChat(Array.from(selectedOrders));
+                }
+            });
+        }
 
     } catch (error) {
         console.error("Error loading user order history:", error);
-        // Ensure you have appropriate Firestore indexes for the query
         if (error.code === 'failed-precondition') {
              orderListElement.innerHTML = '<p class="text-red-600 text-sm p-4">Error: Missing database index. Check console for details.</p>';
              console.error("Firestore indexing error. Please create the required composite index for the 'orders' collection query."); 
@@ -665,6 +720,205 @@ async function loadUserOrderHistory(userId) {
         }
     }
 }
+
+// Function to open chat for a single order
+async function openChat(orderId, vendorId) {
+    console.log(`Opening chat for order ${orderId} with vendor ${vendorId}`);
+    
+    // Set the current chat order ID
+    currentChatOrderId = orderId;
+    
+    // Show the chat window
+    const chatWindow = document.getElementById('chatWindow');
+    if (chatWindow) {
+        chatWindow.classList.remove('hidden');
+    } else {
+        console.error("Chat window element not found");
+        showToast('Chat window not found', 'error');
+        return;
+    }
+    
+    // Clear previous messages
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+        chatMessages.innerHTML = '';
+    }
+    
+    // Subscribe to messages
+    if (chatUnsubscribe) {
+        chatUnsubscribe();
+    }
+    
+    try {
+        // Get order details
+        const orderDoc = await getDoc(doc(db, 'orders', orderId));
+        if (!orderDoc.exists()) {
+            throw new Error('Order not found');
+        }
+        const orderData = orderDoc.data();
+        
+        // Get vendor details if vendorId is provided
+        let vendorData = null;
+        if (vendorId) {
+            const vendorDoc = await getDoc(doc(db, 'vendors', vendorId));
+            if (vendorDoc.exists()) {
+                vendorData = vendorDoc.data();
+            }
+        }
+        
+        // Set up real-time message listener
+        chatUnsubscribe = onSnapshot(
+            query(
+                collection(db, 'messages'),
+                where('orderId', '==', orderId),
+                orderBy('timestamp', 'asc')
+            ),
+            (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const message = change.doc.data();
+                        appendMessage(message);
+                    }
+                });
+                // Scroll to bottom
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            },
+            (error) => {
+                console.error("Error listening to messages:", error);
+                showToast('Error loading messages', 'error');
+            }
+        );
+        
+        // Update chat window title with order details
+        const chatTitle = document.getElementById('chatTitle');
+        if (chatTitle) {
+            chatTitle.textContent = `Chat - Order #${orderId.substring(0, 6)}`;
+        }
+        
+    } catch (error) {
+        console.error("Error setting up chat:", error);
+        showToast('Error setting up chat: ' + error.message, 'error');
+    }
+}
+
+// Function to open chat for multiple orders
+function openBulkChat(orderIds) {
+    console.log(`Opening bulk chat for orders:`, orderIds);
+    // TODO: Implement bulk chat functionality
+    showToast('Bulk chat functionality coming soon!', 'info');
+}
+
+// Append a message to the chat
+function appendMessage(message) {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+    
+    const messageDiv = document.createElement('div');
+    const isCurrentUser = message.senderId === auth.currentUser.uid;
+    
+    messageDiv.className = `mb-2 ${isCurrentUser ? 'text-right' : 'text-left'}`;
+    messageDiv.innerHTML = `
+        <div class="inline-block max-w-[80%] rounded-lg px-3 py-2 ${
+            isCurrentUser 
+                ? 'bg-primary-600 text-white' 
+                : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100'
+        }">
+            <p class="text-sm">${message.text}</p>
+            <span class="text-xs opacity-75">${formatTimestamp(message.timestamp)}</span>
+        </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+}
+
+// Format timestamp
+function formatTimestamp(timestamp) {
+    if (!timestamp) return '';
+    const date = timestamp.toDate();
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// Handle message submission
+function setupChatFormListener() {
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+    
+    if (!chatForm || !messageInput) {
+        console.error("Chat form elements not found");
+        return;
+    }
+    
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (!currentChatOrderId || !messageInput.value.trim()) return;
+        
+        try {
+            await addDoc(collection(db, 'messages'), {
+                orderId: currentChatOrderId,
+                senderId: auth.currentUser.uid,
+                senderName: currentUserData?.name || auth.currentUser.email,
+                text: messageInput.value.trim(),
+                timestamp: serverTimestamp()
+            });
+            
+            messageInput.value = '';
+        } catch (error) {
+            console.error('Error sending message:', error);
+            showToast('Failed to send message. Please try again.', 'error');
+        }
+    });
+}
+
+// Setup chat window close button
+function setupChatCloseButton() {
+    const closeChatWindow = document.getElementById('closeChatWindow');
+    if (!closeChatWindow) {
+        console.error("Chat close button not found");
+        return;
+    }
+    
+    closeChatWindow.addEventListener('click', () => {
+        const chatWindow = document.getElementById('chatWindow');
+        if (chatWindow) {
+            chatWindow.classList.add('hidden');
+        }
+        
+        if (chatUnsubscribe) {
+            chatUnsubscribe();
+            chatUnsubscribe = null;
+        }
+        currentChatOrderId = null;
+    });
+}
+
+// Initialize chat functionality
+function initializeChat() {
+    setupChatFormListener();
+    setupChatCloseButton();
+    
+    // Setup chat button if it exists
+    const chatButton = document.getElementById('chatButton');
+    if (chatButton) {
+        chatButton.addEventListener('click', () => {
+            if (currentChatOrderId) {
+                const chatWindow = document.getElementById('chatWindow');
+                if (chatWindow) {
+                    chatWindow.classList.toggle('hidden');
+                }
+            } else {
+                showToast('Please select an order to chat about', 'info');
+            }
+        });
+    }
+}
+
+// ... existing code ...
+
+// Initialize chat functionality when the app starts
+initializeChat();
 
 // Toast notification system
 function showToast(message, type = 'info') {
@@ -1418,3 +1672,62 @@ try {
 window.onload = () => { ... };
 document.addEventListener('DOMContentLoaded', () => { ... });
 */
+
+// Chat functionality
+let currentChatOrderId = null;
+let chatUnsubscribe = null;
+
+// DOM Elements for chat
+const chatButton = document.getElementById('chatButton');
+const chatWindow = document.getElementById('chatWindow');
+const closeChatWindow = document.getElementById('closeChatWindow');
+const chatMessages = document.getElementById('chatMessages');
+const chatForm = document.getElementById('chatForm');
+const messageInput = document.getElementById('messageInput');
+
+// Toggle chat window
+chatButton.addEventListener('click', () => {
+    if (currentChatOrderId) {
+        chatWindow.classList.toggle('hidden');
+    } else {
+        showToast('Please select an order to chat about', 'info');
+    }
+});
+
+// Close chat window
+closeChatWindow.addEventListener('click', () => {
+    chatWindow.classList.add('hidden');
+    if (chatUnsubscribe) {
+        chatUnsubscribe();
+        chatUnsubscribe = null;
+    }
+    currentChatOrderId = null;
+});
+
+// Function to populate profile section with user data
+function populateProfileSection() {
+    console.log("Populating profile section");
+    const profileSection = document.getElementById('profile-section');
+    if (!profileSection) {
+        console.error("Profile section element not found");
+        return;
+    }
+
+    // Get profile elements
+    const profileName = document.getElementById('profile-name');
+    const profileEmail = document.getElementById('profile-email');
+    const profilePhone = document.getElementById('profile-phone');
+    const profileRole = document.getElementById('profile-role');
+
+    // Check if we have current user data
+    if (!currentUserData) {
+        console.error("No user data available for profile");
+        return;
+    }
+
+    // Update profile information
+    if (profileName) profileName.textContent = currentUserData.name || 'N/A';
+    if (profileEmail) profileEmail.textContent = currentUserData.email || 'N/A';
+    if (profilePhone) profilePhone.textContent = currentUserData.phone || 'N/A';
+    if (profileRole) profileRole.textContent = currentUserData.role ? currentUserData.role.charAt(0).toUpperCase() + currentUserData.role.slice(1) : 'N/A';
+}

@@ -7,11 +7,18 @@
     <title>KWVMS - Vendor Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+    <!-- Firebase SDK (Modular v9+) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        // Add other services you need here, e.g., getAuth, getFirestore
+        // import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        // import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        
+        // Your web app's Firebase configuration (from firebase-config.js or similar)
+        // Make sure firebaseConfig is defined before this script runs, 
+        // possibly by including firebase-config.js first or defining it inline.
+        // const app = initializeApp(firebaseConfig); 
+    </script>
     <!-- Inter font -->
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <script>
@@ -256,10 +263,43 @@
         </main>
     </div>
 
+    <!-- Floating Chat Button -->
+    <button id="chatButton" class="fixed bottom-6 right-6 bg-primary-600 text-white rounded-full p-4 shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 z-40">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+        </svg>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chatWindow" class="fixed bottom-24 right-6 bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-80 h-96 hidden flex flex-col z-50">
+        <div class="p-3 border-b border-neutral-200 dark:border-neutral-700 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100">Chat with Customer</h3>
+            <button id="closeChatWindow" class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="flex-1 p-3 overflow-y-auto" id="chatMessages">
+            <!-- Messages will be loaded here -->
+        </div>
+        <div class="p-3 border-t border-neutral-200 dark:border-neutral-700">
+            <form id="chatForm" class="flex space-x-2">
+                <input type="text" id="messageInput" class="flex-1 rounded-md border border-neutral-300 dark:border-neutral-600 px-3 py-2 text-sm text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Type your message...">
+                <button type="submit" class="px-3 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Custom Scripts -->
     <script src="js/firebase-config.js"></script>
     <!-- Add defer to ensure scripts run after HTML parsing and in order -->
     <script src="js/ui-utils.js" defer></script>
-    <script src="vendor-dashboard.js" defer></script>
+    <!-- Change vendor-dashboard.js to type="module" -->
+    <script type="module" src="vendor-dashboard.js" defer></script>
 </body>
 </html> 

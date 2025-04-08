@@ -98,12 +98,51 @@
                        );
         }
 
+        // Rules for messages collection
+        match /messages/{messageId} {
+          allow read: if request.auth != null && (
+            // User can read messages for their orders
+            exists(/databases/$(database)/documents/orders/$(resource.data.orderId)) &&
+            get(/databases/$(database)/documents/orders/$(resource.data.orderId)).data.userId == request.auth.uid ||
+            // Vendor can read messages for orders assigned to them OR pending orders
+            exists(/databases/$(database)/documents/orders/$(resource.data.orderId)) &&
+            (get(/databases/$(database)/documents/orders/$(resource.data.orderId)).data.assignedVendorId == request.auth.uid ||
+             (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
+              get(/databases/$(database)/documents/orders/$(resource.data.orderId)).data.status == 'pending')) ||
+            // Admin can read all messages
+            isAdmin()
+          );
+          
+          allow create: if request.auth != null && (
+            // User can create messages for their orders
+            exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
+            get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId == request.auth.uid ||
+            // Vendor can create messages for orders assigned to them OR pending orders
+            exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId)) &&
+            (get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.assignedVendorId == request.auth.uid ||
+             (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
+              get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status == 'pending')) ||
+            // Admin can create messages
+            isAdmin()
+          ) && 
+          // Ensure sender ID matches the authenticated user
+          request.resource.data.senderId == request.auth.uid &&
+          // Ensure required fields exist and are of correct type
+          request.resource.data.keys().hasAll(['orderId', 'senderId', 'text', 'timestamp']) &&
+          request.resource.data.orderId is string &&
+          request.resource.data.senderId is string &&
+          request.resource.data.text is string &&
+          request.resource.data.text.size() > 0;
+        }
+
         // Rules for a specific settings document
         match /settings/main {
            // Allow any authenticated user to read settings
            allow read: if request.auth != null;
            // Allow only admins to write settings (Placeholder - add isAdmin() check later)
-           // allow write: if request.auth != null && isAdmin(); 
+           allow write: if request.auth != null && isAdmin(); 
         }
 
         // Add rules for other collections (e.g., orders) later
