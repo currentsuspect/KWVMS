@@ -5,7 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kajiado Water Vending Management System</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage-compat.js"></script>
+    <!-- Inter font -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <script>
         // Configure Tailwind for class-based dark mode with custom colors
         tailwind.config = {
@@ -86,55 +94,221 @@
 </head>
 <body class="bg-neutral-100 dark:bg-neutral-900 font-sans antialiased">
 
-    <!-- Header with Water Drop Logo -->
-    <header class="bg-white dark:bg-neutral-800 shadow-md sticky top-0 z-50">
-        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                 <div class="flex-shrink-0 flex items-center">
-                     <!-- Water Drop Logo SVG -->
-                     <svg class="h-8 w-8 text-primary-600 dark:text-primary-400 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256" stroke-width="1.5" stroke="currentColor">
-                         <path d="M174,47.75a256.11,256.11,0,0,0-41.45-38.3,8,8,0,0,0-9.1,0,256.11,256.11,0,0,0-41.45,38.3C61.79,77.42,49.5,123.61,49.51,169.25c0,45.63,17.18,89.44,48.46,121.87A88.45,88.45,0,0,0,128,232a88.45,88.45,0,0,0,30-41.13c31.28-32.43,48.46-76.24,48.46-121.87C206.5,123.61,194.21,77.42,174,47.75ZM128,216a72.49,72.49,0,0,1-23.31-3.93,74.91,74.91,0,0,1-21.41-11.38C77.93,172.17,65,134.21,65,169.25c0-38.52,10.39-75.3,28.47-105.59a240.3,240.3,0,0,1,34.54-31.57,240.3,240.3,0,0,1,34.54,31.57C180.61,94,191,130.73,191,169.25c0-35,0-12.92-18.28,31.44a74.91,74.91,0,0,1-21.41,11.38A72.49,72.49,0,0,1,128,216Z" fill="currentColor"></path>
-                     </svg>
-                     <span class="text-xl font-bold text-primary-600 dark:text-primary-400">KWVMS</span>
-                 </div>
-                 <!-- Nav Links / Actions Placeholder -->
-                 <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                     <!-- Current: "border-primary-500 text-neutral-900", Default: "border-transparent text-neutral-500 hover:border-neutral-300 hover:text-neutral-700" -->
-                     <!-- <a href="#" class="border-primary-500 text-neutral-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Dashboard</a> -->
-                 </div>
-                 <!-- Dark Mode Toggle Placeholder -->
-                 <div id="theme-toggle-placeholder"></div>
-            </div>
-        </nav>
-    </header>
+    <!-- <<< Login Section (Initially Hidden) >>> -->
+    <div id="loginSection" class="hidden min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+         <div class="max-w-md w-full space-y-8">
+            <!-- Login Form HTML will be injected here by renderLoginView -->
+         </div>
+    </div>
 
-    <!-- Main Content Area -->
-    <main id="app-content" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Dynamic content will be loaded here -->
-        <div class="flex items-center justify-center h-64">
-            <div class="flex flex-col items-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500 mb-4"></div>
-                <p class="text-neutral-500 dark:text-neutral-400">Loading...</p>
+    <!-- <<< Register Section (Initially Hidden) >>> -->
+    <div id="registerSection" class="hidden min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+         <div class="max-w-md w-full space-y-8">
+            <!-- Register Form HTML will be injected here by renderRegisterView -->
+         </div>
+    </div>
+
+    <!-- <<< Main App Sections (Dashboard, etc.) >>> -->
+    <nav class="bg-white dark:bg-gray-800 shadow sticky top-0 z-50 hidden" id="appNavBar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center text-gray-900 dark:text-white font-bold">
+                        Kajiado Water
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <!-- Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
+                        <a href="#" id="nav-order" class="border-indigo-500 dark:border-indigo-400 text-gray-900 dark:text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Order Water
+                        </a>
+                        <a href="#" id="nav-vendors" class="border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-700 dark:hover:text-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Available Vendors
+                        </a>
+                        <a href="#" id="nav-history" class="border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-700 dark:hover:text-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            My Orders
+                        </a>
+                        <a href="#" id="nav-profile" class="border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-700 dark:hover:text-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            Profile
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                     <button id="theme-toggle" type="button" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                        <svg id="theme-toggle-dark-icon" class="hidden h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                        <svg id="theme-toggle-light-icon" class="hidden h-6 w-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    </button>
+                    <button id="logoutButton" class="ml-4 py-2 px-4 rounded-md font-medium text-white transition duration-150 ease-in-out bg-error-600 hover:bg-error-700 dark:bg-error-500 dark:hover:bg-error-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Logout
+                    </button>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="-mr-2 flex items-center sm:hidden">
+                    <button type="button" id="mobile-menu-button" class="bg-white dark:bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Icon when menu is closed. -->
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Icon when menu is open. -->
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
-    </main>
+
+        <!-- Mobile menu, show/hide based on menu state. -->
+        <div class="sm:hidden hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="#" id="mobile-nav-order" class="bg-indigo-50 dark:bg-indigo-900 border-indigo-500 dark:border-indigo-400 text-indigo-700 dark:text-indigo-300 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Order Water</a>
+                <a href="#" id="mobile-nav-vendors" class="border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-800 dark:hover:text-gray-300 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Available Vendors</a>
+                <a href="#" id="mobile-nav-history" class="border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-800 dark:hover:text-gray-300 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">My Orders</a>
+                <a href="#" id="mobile-nav-profile" class="border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-800 dark:hover:text-gray-300 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Profile</a>
+            </div>
+        </div>
+         </nav>
+
+    <div id="loadingIndicator" class="fixed inset-0 bg-neutral-100 dark:bg-neutral-900 bg-opacity-60 dark:bg-opacity-60 flex items-center justify-center z-50 hidden">
+        <div class="flex flex-col items-center">
+            <!-- Updated Spinner -->
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-neutral-200 dark:border-neutral-700 border-t-primary-500 mb-4"></div> 
+            <p class="text-neutral-600 dark:text-neutral-400">Loading...</p>
+        </div>
+    </div>
+
+    <div id="userDashboard" class="container mx-auto p-4 hidden">
+        <h1 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Welcome, <span id="userName">User</span>!</h1>
+
+        <!-- Main Content Sections -->
+        <div id="order-section">
+            <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Place a New Order</h2>
+            <form id="orderForm" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6 space-y-6">
+               <!-- <<< Add static form fields here >>> -->
+               <div>
+                   <label for="order-quantity-slider" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity (Liters): <span id="order-quantity-value" class="font-semibold text-indigo-600 dark:text-indigo-400">100</span>L</label>
+                   <input type="range" id="order-quantity-slider" name="quantity" 
+                          min="20" max="200" step="10" value="100" required 
+                          class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-gray-600">
+                   <script>
+                       // Inline script to update slider value display
+                       const slider = document.getElementById('order-quantity-slider');
+                       const quantityDisplay = document.getElementById('order-quantity-value');
+                       if (slider && quantityDisplay) {
+                           slider.oninput = () => { quantityDisplay.textContent = slider.value; };
+                           // Ensure initial value is set if JS runs after element creation
+                           quantityDisplay.textContent = slider.value; 
+                       }
+                   </script>
+                </div>
+                <div>
+                   <label for="order-location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Delivery Location Details:</label>
+                   <textarea id="order-location" name="location" rows="3" required 
+                             class="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                             placeholder="Specific details like house number, street, nearest landmark..."></textarea>
+               </div>
+               
+               <!-- Styled Error Message -->
+               <div id="order-error" class="text-red-600 dark:text-red-400 text-sm mt-2 hidden"></div>
+               
+               <div>
+                   <button type="submit" 
+                           class="w-full inline-flex justify-center py-2 px-4 rounded-md font-medium text-white transition duration-150 ease-in-out bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                       Submit Order & Proceed to Payment
+                   </button>
+               </div>
+            </form>
+        </div>
+
+        <div id="vendors-section" class="hidden">
+            <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">Available Vendors</h2>
+            <p id="vendorsLoadingMessage" class="text-neutral-500 dark:text-neutral-400 col-span-full mb-4">Loading available vendors...</p>
+            <div id="availableVendorsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                 <!-- Vendor cards will be loaded here -->
+                 <!-- Initial loading message removed from here -->
+            </div>
+        </div>
+
+        <div id="history-section" class="hidden">
+             <h2 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">My Order History</h2>
+             <div id="user-order-list" class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                <!-- Order history items will be loaded here -->
+             </div>
+        </div>
+
+        <div id="profile-section" class="hidden bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">My Profile</h2>
+            <div id="profile-details" class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                <p><strong>Name:</strong> <span id="profile-name">Loading...</span></p>
+                <p><strong>Email:</strong> <span id="profile-email">Loading...</span></p>
+                <p><strong>Phone:</strong> <span id="profile-phone">Loading...</span></p>
+                <p><strong>Role:</strong> <span id="profile-role">Loading...</span></p>
+                <button id="edit-profile-button" class="mt-4 inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled>
+                    Edit Profile (Coming Soon)
+                </button>
+            </div>
+        </div>
+
+    </div>
 
     <!-- Footer with Water Drop Logo -->
-    <footer class="bg-white dark:bg-neutral-800 mt-12 py-4 border-t border-neutral-200 dark:border-neutral-700">
+    <footer class="bg-white dark:bg-neutral-800 mt-12 py-4 border-t border-neutral-200 dark:border-neutral-700 hidden" id="appFooter">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <p class="text-sm text-neutral-500 dark:text-neutral-400">&copy; 2025 Kajiado Water Vending Management System. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- Firebase SDK (using compat versions for simplicity with existing code) -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
     <!-- Your Custom Scripts -->
     <script src="js/firebase-config.js"></script>
     <!-- Load main.js as a module -->
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/main.js" defer></script>
+
+    <!-- <<< New Section for Confirming Order >>> -->
+    <div id="confirm-order-section" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-40 p-4">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full space-y-6">
+            <h2 class="text-center text-xl font-semibold text-gray-900 dark:text-gray-100">Confirm Order</h2>
+            <p class="text-sm text-center text-gray-600 dark:text-gray-400">
+                You are ordering from <strong id="confirm-vendor-name" class="text-indigo-600 dark:text-indigo-400">Vendor...</strong>
+            </p>
+            <form id="confirm-order-form" class="space-y-6">
+                <input type="hidden" id="confirm-vendor-id" name="vendorId">
+                <div>
+                    <label for="confirm-quantity-slider" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quantity (Liters): <span id="confirm-quantity-value" class="font-semibold text-indigo-600 dark:text-indigo-400">100</span>L</label>
+                    <input type="range" id="confirm-quantity-slider" name="quantity" 
+                           min="20" max="200" step="10" value="100" required 
+                           class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer mt-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-gray-600">
+                    <script>
+                        // Inline script to update slider value display for confirm section
+                        const confirmSlider = document.getElementById('confirm-quantity-slider');
+                        const confirmQuantityDisplay = document.getElementById('confirm-quantity-value');
+                        if (confirmSlider && confirmQuantityDisplay) {
+                            confirmSlider.oninput = () => { confirmQuantityDisplay.textContent = confirmSlider.value; };
+                            confirmQuantityDisplay.textContent = confirmSlider.value; 
+                        }
+                    </script>
+                </div>
+                <!-- Calculated Price Display (optional) -->
+                <div class="text-center">
+                     <p class="text-sm text-gray-500 dark:text-gray-400">Estimated Price: <strong id="confirm-estimated-price" class="text-gray-700 dark:text-gray-300">Calculating...</strong></p>
+                </div>
+                
+                <div id="confirm-order-error" class="text-red-600 dark:text-red-400 text-sm mt-2 hidden"></div>
+                
+                <div class="flex items-center justify-between space-x-4">
+                    <button type="button" id="cancel-confirm-button" 
+                            class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            id="confirm-submit-button"
+                            class="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Confirm & Proceed to Payment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- End Confirm Order Section -->
 
 </body>
 </html>

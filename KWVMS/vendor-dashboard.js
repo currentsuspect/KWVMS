@@ -136,7 +136,7 @@ async function loadEarnings() {
             } else {
                 console.warn("Vendor document not found for earnings calculation.");
                 document.getElementById('totalEarnings').textContent = 'KES 0.00';
-                document.getElementById('completedOrders').textContent = '0';
+        document.getElementById('completedOrders').textContent = '0';
                 document.getElementById('averageRating').textContent = 'N/A';
             }
         } catch (error) {
@@ -150,7 +150,7 @@ async function loadEarnings() {
          console.warn("Cannot load earnings, current vendor data not available.");
          document.getElementById('totalEarnings').textContent = 'N/A';
          document.getElementById('completedOrders').textContent = 'N/A';
-         document.getElementById('averageRating').textContent = 'N/A';
+        document.getElementById('averageRating').textContent = 'N/A';
     }
 }
 
@@ -714,7 +714,7 @@ async function updateOrderStatus(orderId, newStatus) {
         // Prepare update data
         const updateData = {
             status: newStatus,
-            [`${newStatus}Timestamp`]: firebase.firestore.FieldValue.serverTimestamp()
+            [`${newStatus}Timestamp`]: firebase.firestore.FieldValue.serverTimestamp() 
         };
         
         // Update the order status

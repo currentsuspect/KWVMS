@@ -1,14 +1,31 @@
     rules_version = '2';
     service cloud.firestore {
+
       match /databases/{database}/documents {
+
+        // Helper function to check if the requesting user is an admin
+        function isAdmin() {
+          // Check the requesting user's role from their Firestore document
+          return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                 get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        }
 
         // Rules for users collection
         match /users/{userId} {
-          // Allow users to read/write their own document
-          allow read: if request.auth != null && request.auth.uid == userId;
-          // Allow users to create their own document (registration)
+          // Allow users to read their own data
+          // Allow admins to read any user data
+          // Allow any authenticated user to read vendor profiles for the 'Available Vendors' list.
+          allow get: if request.auth != null && 
+                        (request.auth.uid == userId || // User reads own profile
+                         isAdmin() ||                  // Admin reads any profile
+                         resource.data.role == 'vendor'); // Any authenticated user reads vendor profile
+          // Allow any authenticated user to LIST the users collection.
+          // Firestore will implicitly filter results based on the 'get' rule above.
+          // This allows the query for available vendors to work.
+          allow list: if request.auth != null;
+          // Allow users to create their own account data
           allow create: if request.auth != null && request.auth.uid == userId;
-          // Allow vendors to update specific fields (status, radius, location) in their own document
+          // Allow users to update their own data (specific fields TBD)
           allow update: if request.auth != null && request.auth.uid == userId && 
                          // Check the role of the user making the request, not the incoming data
                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
@@ -69,10 +86,24 @@
                             .hasOnly(['status']) &&
                           request.resource.data.status == 'cancelled') || // Example: Allow user to set status to 'cancelled'
                           
+                         // <<< ADD THIS: User updates payment status on their own order >>>
+                         (resource.data.userId == request.auth.uid &&
+                          request.resource.data.diff(resource.data).affectedKeys()
+                            .hasOnly(['paymentStatus', 'paidAt']) && // Only allow these fields
+                          request.resource.data.paymentStatus == 'paid') || // Ensure they are setting it to 'paid'
+                          
                          // Admin can update any order (for testing and management)
                          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
                        );
+        }
+
+        // Rules for a specific settings document
+        match /settings/main {
+           // Allow any authenticated user to read settings
+           allow read: if request.auth != null;
+           // Allow only admins to write settings (Placeholder - add isAdmin() check later)
+           // allow write: if request.auth != null && isAdmin(); 
         }
 
         // Add rules for other collections (e.g., orders) later

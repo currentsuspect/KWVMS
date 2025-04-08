@@ -1,20 +1,17 @@
 {
   "name": "kwvms",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "KWVMS - A vendor management system",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build:css": "npx tailwindcss -i ./KWVMS/css/tailwind.css -o ./KWVMS/dist/output.css",
-    "watch:css": "npx tailwindcss -i ./KWVMS/css/tailwind.css -o ./KWVMS/dist/output.css --watch"
+    "dev": "tailwindcss -i ./src/css/input.css -o ./dist/css/output.css --watch",
+    "build": "tailwindcss -i ./src/css/input.css -o ./dist/css/output.css --minify"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "dependencies": {
+    "firebase": "^10.7.0"
+  },
   "devDependencies": {
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.4"
+    "tailwindcss": "^3.3.0",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31"
   }
 } 
