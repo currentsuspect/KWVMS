@@ -95,18 +95,45 @@
 <body class="bg-neutral-100 dark:bg-neutral-900 font-sans antialiased">
 
     <!-- <<< Login Section (Initially Hidden) >>> -->
-    <div id="loginSection" class="hidden min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div id="loginSection" class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
          <div class="max-w-md w-full space-y-8">
             <!-- Login Form HTML will be injected here by renderLoginView -->
+            <!-- Login Skeleton Loader -->
+            <div id="loginSkeleton" class="bg-white dark:bg-neutral-800 p-8 rounded-lg shadow-md space-y-6">
+                <div class="text-center">
+                    <div class="mx-auto h-10 w-10 bg-neutral-200 dark:bg-neutral-700 rounded-full animate-pulse"></div>
+                    <div class="mt-2 h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 mx-auto animate-pulse"></div>
+                </div>
+                <div class="space-y-4">
+                    <div class="h-10 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                    <div class="h-10 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                    <div class="h-10 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse"></div>
+                </div>
+            </div>
          </div>
     </div>
 
-    <!-- <<< Register Section (Initially Hidden) >>> -->
-    <div id="registerSection" class="hidden min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-         <div class="max-w-md w-full space-y-8">
-            <!-- Register Form HTML will be injected here by renderRegisterView -->
-         </div>
-    </div>
+    <!-- Register Section (Initially Hidden) -->
+    <section id="registerSection" class="hidden min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Skeleton Loader for Register -->
+            <div id="registerSkeleton" class="animate-pulse">
+                <div class="flex justify-center mb-6">
+                    <div class="h-12 w-12 rounded-full bg-neutral-300 dark:bg-neutral-700"></div>
+                </div>
+                <div class="space-y-4">
+                    <div class="h-4 bg-neutral-300 dark:bg-neutral-700 rounded w-3/4 mx-auto"></div>
+                    <div class="h-8 bg-neutral-300 dark:bg-neutral-700 rounded w-full"></div>
+                    <div class="h-8 bg-neutral-300 dark:bg-neutral-700 rounded w-full"></div>
+                    <div class="h-8 bg-neutral-300 dark:bg-neutral-700 rounded w-full"></div>
+                    <div class="h-8 bg-neutral-300 dark:bg-neutral-700 rounded w-full"></div>
+                    <div class="h-10 bg-neutral-300 dark:bg-neutral-700 rounded w-full mt-6"></div>
+                    <div class="h-4 bg-neutral-300 dark:bg-neutral-700 rounded w-1/2 mx-auto mt-2"></div>
+                </div>
+            </div>
+            <!-- Register Form will be injected here by JS -->
+        </div>
+    </section>
 
     <!-- <<< Main App Sections (Dashboard, etc.) >>> -->
     <nav class="bg-white dark:bg-gray-800 shadow sticky top-0 z-50 hidden" id="appNavBar">
@@ -309,6 +336,28 @@
         </div>
     </div>
     <!-- End Confirm Order Section -->
+
+    <!-- Order History Section -->
+    <section id="orderHistorySection" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Order History</h2>
+        <div id="orderHistoryContainer">
+            <!-- Skeleton Loader -->
+            <div class="space-y-4">
+                <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-4 animate-pulse">
+                    <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 mb-2"></div>
+                    <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2"></div>
+                </div>
+                <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-4 animate-pulse">
+                    <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 mb-2"></div>
+                    <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2"></div>
+                </div>
+                <div class="bg-white dark:bg-neutral-800 rounded-lg shadow p-4 animate-pulse">
+                    <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4 mb-2"></div>
+                    <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-1/2"></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 </body>
 </html>

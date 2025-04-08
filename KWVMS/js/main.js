@@ -96,146 +96,213 @@ function hideLoading() {
 // --- View Rendering Functions ---
 
 function renderLoginView() {
-    console.log("Rendering Login View");
-    // Hide main app sections
-    document.getElementById('appNavBar')?.classList.add('hidden');
-    document.getElementById('userDashboard')?.classList.add('hidden'); 
-    document.getElementById('appFooter')?.classList.add('hidden');
-    document.getElementById('loadingIndicator')?.classList.add('hidden'); // Ensure loading is hidden
-    
-    // Show login section
+    console.log("--- renderLoginView START ---");
     const loginSection = document.getElementById('loginSection');
-    if (!loginSection) {
-        console.error("Login section element not found!");
-        document.body.innerHTML = '<h1>Error: Login UI failed to load.</h1>'; // Fallback
+    const registerSection = document.getElementById('registerSection');
+    const loginSkeleton = document.getElementById('loginSkeleton');
+    const loginFormContainer = loginSection?.querySelector('.max-w-md');
+    
+    if (!loginSection || !loginFormContainer) {
+        console.error("Required login elements not found");
         return;
     }
+    
+    // Show the login section and hide the register section
+    console.log("Showing loginSection, Hiding registerSection");
     loginSection.classList.remove('hidden');
-    document.getElementById('registerSection')?.classList.add('hidden');
-
-    // Populate login section's inner div
-    const loginContainer = loginSection.querySelector('.max-w-md.w-full.space-y-8');
-    if (!loginContainer) {
-         console.error("Login container div not found within #loginSection!");
-         loginSection.innerHTML = '<h1>Error: Login UI structure incomplete.</h1>';
-         return;
+    if (registerSection) registerSection.classList.add('hidden');
+    
+    // Show skeleton loader
+    console.log("Showing loginSkeleton");
+    if (loginSkeleton) loginSkeleton.classList.remove('hidden');
+    
+    // Clear ALL existing content in the form container
+    loginFormContainer.innerHTML = '';
+    
+    // Add the skeleton back if it exists
+    if (loginSkeleton) {
+        loginFormContainer.appendChild(loginSkeleton);
     }
 
-    const loginHtml = `
-        <div class="text-center">
-             <svg class="mx-auto h-10 w-10 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256">
-                 <path d="M174,47.75a256.11,256.11,0,0,0-41.45-38.3,8,8,0,0,0-9.1,0,256.11,256.11,0,0,0-41.45,38.3C61.79,77.42,49.5,123.61,49.51,169.25c0,45.63,17.18,89.44,48.46,121.87A88.45,88.45,0,0,0,128,232a88.45,88.45,0,0,0,30-41.13c31.28-32.43,48.46-76.24,48.46-121.87C206.5,123.61,194.21,77.42,174,47.75ZM128,216a72.49,72.49,0,0,1-23.31-3.93,74.91,74.91,0,0,1-21.41-11.38C77.93,172.17,65,134.21,65,169.25c0-38.52,10.39-75.3,28.47-105.59a240.3,240.3,0,0,1,34.54-31.57,240.3,240.3,0,0,1,34.54,31.57C180.61,94,191,130.73,191,169.25c0-35,0-12.92-18.28,31.44a74.91,74.91,0,0,1-21.41,11.38A72.49,72.49,0,0,1,128,216Z" fill="currentColor"></path>
-             </svg>
-             <h1 class="mt-2 text-xl font-semibold text-neutral-700 dark:text-neutral-300">Kajiado Water</h1>
-        </div>
-        <div class="bg-white dark:bg-neutral-800 p-8 rounded-lg shadow-md space-y-6"> 
-            <div><h2 class="text-center text-2xl font-bold text-neutral-700 dark:text-neutral-100">Sign in</h2></div>
-            <form id="login-form" class="space-y-6">
-                <input type="hidden" name="remember" value="true">
-                <div class="rounded-md shadow-sm -space-y-px">
-                    <div>
-                        <label for="login-email" class="sr-only">Email</label>
-                        <input id="login-email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" placeholder="Email address">
-                    </div>
-                    <div>
-                        <label for="login-password" class="sr-only">Password</label>
-                        <input id="login-password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" placeholder="Password">
-                    </div>
-                </div>
-                <div id="auth-error" class="p-3 bg-error-100 dark:bg-error-900 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-200 rounded-md text-sm hidden"></div> 
+    // Simulate a small delay to show the skeleton (remove in production)
+    setTimeout(() => {
+        // Hide skeleton loader
+        console.log("Hiding loginSkeleton, Appending form");
+        if (loginSkeleton) loginSkeleton.classList.add('hidden');
+        
+        // Check if a form already exists
+        const existingForm = loginFormContainer.querySelector('form');
+        if (existingForm) {
+            console.log("Found existing form, removing it");
+            existingForm.remove();
+        }
+        
+        // Create and append the login form
+        const loginForm = document.createElement('form');
+        loginForm.className = 'mt-8 space-y-6';
+        loginForm.innerHTML = `
+             <div class="text-center mb-4">
+                 <svg class="mx-auto h-10 w-10 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256"><path d="M174,47.75a256.11,256.11,0,0,0-41.45-38.3,8,8,0,0,0-9.1,0,256.11,256.11,0,0,0-41.45,38.3C61.79,77.42,49.5,123.61,49.51,169.25c0,45.63,17.18,89.44,48.46,121.87A88.45,88.45,0,0,0,128,232a88.45,88.45,0,0,0,30-41.13c31.28-32.43,48.46-76.24,48.46-121.87C206.5,123.61,194.21,77.42,174,47.75ZM128,216a72.49,72.49,0,0,1-23.31-3.93,74.91,74.91,0,0,1-21.41-11.38C77.93,172.17,65,134.21,65,169.25c0-38.52,10.39-75.3,28.47-105.59a240.3,240.3,0,0,1,34.54-31.57,240.3,240.3,0,0,1,34.54,31.57C180.61,94,191,130.73,191,169.25c0-35,0-12.92-18.28,31.44a74.91,74.91,0,0,1-21.41,11.38A72.49,72.49,0,0,1,128,216Z" fill="currentColor"></path></svg>
+                 <h1 class="mt-2 text-xl font-semibold text-neutral-700 dark:text-neutral-300">Kajiado Water</h1>
+                 <h2 class="mt-6 text-center text-3xl font-extrabold text-neutral-900 dark:text-neutral-100">
+                    Sign in to your account
+                 </h2>
+             </div>
+            <div class="rounded-md shadow-sm -space-y-px">
                 <div>
-                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">Sign in</button>
+                    <label for="email" class="sr-only">Email address</label>
+                    <input id="email" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-white rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-neutral-800" placeholder="Email address">
                 </div>
-            </form>
-            <p class="text-center text-sm text-neutral-600 dark:text-neutral-400">
-                Don't have an account? 
-                <button id="go-to-register" class="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300">Register here</button>
-            </p>
-        </div>
-    `;
-    loginContainer.innerHTML = loginHtml;
+                <div>
+                    <label for="password" class="sr-only">Password</label>
+                    <input id="password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-white rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-neutral-800" placeholder="Password">
+                </div>
+            </div>
 
-    // Add event listeners
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
-    document.getElementById('go-to-register').addEventListener('click', renderRegisterView);
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 dark:border-neutral-600 rounded dark:bg-neutral-800">
+                    <label for="remember-me" class="ml-2 block text-sm text-neutral-900 dark:text-neutral-300">
+                        Remember me
+                    </label>
+                </div>
+
+                <div class="text-sm">
+                    <a href="#" class="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
+                        Forgot your password?
+                    </a>
+                </div>
+            </div>
+            <div id="auth-error" class="p-3 bg-error-100 dark:bg-error-900 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-200 rounded-md text-sm hidden"></div>
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-primary-500 group-hover:text-primary-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    Sign in
+                </button>
+            </div>
+            <p class="mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400">
+                Don't have an account?
+                <button type="button" id="go-to-register" class="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
+                    Register here
+                </button>
+            </p>
+        `;
+
+        // Remove any existing forms before appending the new one
+        const existingForms = loginFormContainer.querySelectorAll('form');
+        existingForms.forEach(form => form.remove());
+
+        loginFormContainer.appendChild(loginForm);
+
+        // Add event listener for form submission
+        loginForm.addEventListener('submit', handleLogin);
+        document.getElementById('go-to-register')?.addEventListener('click', renderRegisterView);
+        
+        console.log("--- renderLoginView END ---");
+    }, 500); // 500ms delay to show skeleton
 }
 
 function renderRegisterView() {
-    console.log("Rendering Register View");
-    // Hide main app sections
-    document.getElementById('appNavBar')?.classList.add('hidden');
-    document.getElementById('userDashboard')?.classList.add('hidden'); 
-    document.getElementById('appFooter')?.classList.add('hidden');
-    document.getElementById('loadingIndicator')?.classList.add('hidden');
-    
-    // Show register section
+    console.log("--- renderRegisterView START ---");
     const registerSection = document.getElementById('registerSection');
-    if (!registerSection) {
-        console.error("Register section element not found!");
-        document.body.innerHTML = '<h1>Error: Registration UI failed to load.</h1>'; 
-        return;
-    }
-    registerSection.classList.remove('hidden');
-    document.getElementById('loginSection')?.classList.add('hidden');
+    const loginSection = document.getElementById('loginSection');
+    const registerSkeleton = document.getElementById('registerSkeleton');
+    const registerFormContainer = registerSection.querySelector('.max-w-md');
     
-    const registerContainer = registerSection.querySelector('.max-w-md.w-full.space-y-8');
-     if (!registerContainer) {
-         console.error("Register container div not found within #registerSection!");
-         registerSection.innerHTML = '<h1>Error: Register UI structure incomplete.</h1>';
-         return;
+    // Show the register section and hide the login section
+    console.log("Showing registerSection, Hiding loginSection");
+    if (registerSection) registerSection.classList.remove('hidden');
+    if (loginSection) loginSection.classList.add('hidden');
+    
+    // Show skeleton loader
+    console.log("Showing registerSkeleton");
+    if (registerSkeleton) registerSkeleton.classList.remove('hidden');
+    
+    // Clear any existing content except the skeleton
+    if (registerFormContainer) {
+        Array.from(registerFormContainer.children).forEach(child => {
+            if (child !== registerSkeleton) {
+                child.remove();
+            }
+        });
     }
 
-    const registerHtml = `
-       <div class="text-center">
-            <svg class="mx-auto h-10 w-10 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256">
-                 <path d="M174,47.75a256.11,256.11,0,0,0-41.45-38.3,8,8,0,0,0-9.1,0,256.11,256.11,0,0,0-41.45,38.3C61.79,77.42,49.5,123.61,49.51,169.25c0,45.63,17.18,89.44,48.46,121.87A88.45,88.45,0,0,0,128,232a88.45,88.45,0,0,0,30-41.13c31.28-32.43,48.46-76.24,48.46-121.87C206.5,123.61,194.21,77.42,174,47.75ZM128,216a72.49,72.49,0,0,1-23.31-3.93,74.91,74.91,0,0,1-21.41-11.38C77.93,172.17,65,134.21,65,169.25c0-38.52,10.39-75.3,28.47-105.59a240.3,240.3,0,0,1,34.54-31.57,240.3,240.3,0,0,1,34.54,31.57C180.61,94,191,130.73,191,169.25c0-35,0-12.92-18.28,31.44a74.91,74.91,0,0,1-21.41,11.38A72.49,72.49,0,0,1,128,216Z" fill="currentColor"></path>
-             </svg>
-             <h1 class="mt-2 text-xl font-semibold text-neutral-700 dark:text-neutral-300">Kajiado Water</h1>
-       </div>
-       <div class="bg-white dark:bg-neutral-800 p-8 rounded-lg shadow-md space-y-6">
-            <div><h2 class="text-center text-2xl font-bold text-neutral-900 dark:text-neutral-100">Create your account</h2></div>
-            <form id="register-form" class="space-y-6">
-                <div class="space-y-4">
-                    <div>
-                        <label for="register-name" class="sr-only">Full Name</label>
-                        <input id="register-name" name="name" type="text" required class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" placeholder="Full Name">
-                    </div>
-                    <div>
-                        <label for="register-email" class="sr-only">Email</label>
-                        <input id="register-email" name="email" type="email" required class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" placeholder="Email address">
-                    </div>
-                    <div>
-                        <label for="register-phone" class="sr-only">Phone</label>
-                        <input id="register-phone" name="phone" type="tel" required class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" placeholder="Phone Number">
-                    </div>
-                    <div>
-                        <label for="register-password" class="sr-only">Password</label>
-                        <input id="register-password" name="password" type="password" required minlength="6" class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-neutral-100 bg-white dark:bg-neutral-700 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm" placeholder="Password (min. 6 characters)">
-                    </div>
-                    <div>
-                        <label for="register-role" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Register as:</label>
-                        <select id="register-role" name="role" required class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm">
-                            <option value="user" selected>Water Buyer (User)</option>
-                            <option value="vendor">Water Vendor</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="auth-error" class="p-3 bg-error-100 dark:bg-error-900 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-200 rounded-md text-sm hidden"></div>
+    // Simulate a small delay to show the skeleton (remove in production)
+    setTimeout(() => {
+        // Hide skeleton loader
+        console.log("Hiding registerSkeleton, Appending form");
+        if (registerSkeleton) registerSkeleton.classList.add('hidden');
+        
+        // Create and append the register form
+        const registerForm = document.createElement('form');
+        registerForm.className = 'mt-8 space-y-6';
+        registerForm.innerHTML = `
+             <div class="text-center mb-4">
+                 <svg class="mx-auto h-10 w-10 text-primary-600 dark:text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 256 256"><path d="M174,47.75a256.11,256.11,0,0,0-41.45-38.3,8,8,0,0,0-9.1,0,256.11,256.11,0,0,0-41.45,38.3C61.79,77.42,49.5,123.61,49.51,169.25c0,45.63,17.18,89.44,48.46,121.87A88.45,88.45,0,0,0,128,232a88.45,88.45,0,0,0,30-41.13c31.28-32.43,48.46-76.24,48.46-121.87C206.5,123.61,194.21,77.42,174,47.75ZM128,216a72.49,72.49,0,0,1-23.31-3.93,74.91,74.91,0,0,1-21.41-11.38C77.93,172.17,65,134.21,65,169.25c0-38.52,10.39-75.3,28.47-105.59a240.3,240.3,0,0,1,34.54-31.57,240.3,240.3,0,0,1,34.54,31.57C180.61,94,191,130.73,191,169.25c0-35,0-12.92-18.28,31.44a74.91,74.91,0,0,1-21.41,11.38A72.49,72.49,0,0,1,128,216Z" fill="currentColor"></path></svg>
+                 <h1 class="mt-2 text-xl font-semibold text-neutral-700 dark:text-neutral-300">Kajiado Water</h1>
+                 <h2 class="mt-6 text-center text-3xl font-extrabold text-neutral-900 dark:text-neutral-100">
+                    Create your account
+                 </h2>
+             </div>
+            <div class="rounded-md shadow-sm -space-y-px">
                 <div>
-                    <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">Register</button>
+                    <label for="reg-name" class="sr-only">Full Name</label>
+                    <input id="reg-name" name="name" type="text" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-white rounded-t-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-neutral-800" placeholder="Full Name">
                 </div>
-            </form>
-            <p class="text-center text-sm text-neutral-600 dark:text-neutral-400">
-                Already have an account? 
-                <button id="go-to-login" class="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300">Login here</button>
-            </p>
-       </div>
-    `;
-    registerContainer.innerHTML = registerHtml;
+                <div>
+                    <label for="reg-email" class="sr-only">Email address</label>
+                    <input id="reg-email" name="email" type="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-neutral-800" placeholder="Email address">
+                </div>
+                <div>
+                    <label for="reg-phone" class="sr-only">Phone Number</label>
+                    <input id="reg-phone" name="phone" type="tel" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-neutral-800" placeholder="Phone Number">
+                </div>
+                <div>
+                    <label for="reg-password" class="sr-only">Password</label>
+                    <input id="reg-password" name="password" type="password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 placeholder-neutral-500 dark:placeholder-neutral-400 text-neutral-900 dark:text-white rounded-b-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm dark:bg-neutral-800" placeholder="Password">
+                </div>
+            </div>
+             <div>
+                 <label for="register-role" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">Register as:</label>
+                 <select id="register-role" name="role" required class="appearance-none rounded relative block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm">
+                     <option value="user" selected>Water Buyer (User)</option>
+                     <option value="vendor">Water Vendor</option>
+                 </select>
+             </div>
+            <div id="auth-error" class="p-3 bg-error-100 dark:bg-error-900 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-200 rounded-md text-sm hidden"></div>
 
-    // Add event listeners
-    document.getElementById('register-form').addEventListener('submit', handleRegister);
-    document.getElementById('go-to-login').addEventListener('click', renderLoginView);
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <svg class="h-5 w-5 text-primary-500 group-hover:text-primary-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    Register
+                </button>
+            </div>
+            <p class="mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400">
+                Already have an account?
+                <button type="button" id="go-to-login" class="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300">
+                    Login here
+                </button>
+            </p>
+        `;
+
+        if (registerFormContainer) {
+            registerFormContainer.appendChild(registerForm);
+
+            // Add event listener for form submission
+            registerForm.addEventListener('submit', handleRegister);
+            document.getElementById('go-to-login').addEventListener('click', renderLoginView);
+        }
+        console.log("--- renderRegisterView END ---");
+    }, 500); // 500ms delay to show skeleton
 }
 
 // Update renderUserDashboard to show app elements
@@ -317,8 +384,8 @@ function renderAdminPanel(user, userData) {
 
 async function handleLogin(event) {
     event.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
     const errorDiv = document.getElementById('auth-error');
     
     errorDiv.textContent = ''; // Clear previous errors
@@ -339,10 +406,10 @@ async function handleLogin(event) {
 
 async function handleRegister(event) {
     event.preventDefault();
-    const name = document.getElementById('register-name').value;
-    const email = document.getElementById('register-email').value;
-    const phone = document.getElementById('register-phone').value;
-    const password = document.getElementById('register-password').value;
+    const name = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const phone = document.getElementById('reg-phone').value;
+    const password = document.getElementById('reg-password').value;
     const role = document.getElementById('register-role').value;
     const errorDiv = document.getElementById('auth-error');
 
@@ -518,7 +585,11 @@ async function loadUserOrderHistory(userId) {
         return;
     }
 
-    orderListElement.innerHTML = '<p class="text-gray-500 p-4">Loading order history...</p>'; // Show loading state with padding
+    // Clear the skeleton loader
+    const orderHistoryContainer = document.getElementById('orderHistoryContainer');
+    if (orderHistoryContainer) {
+        orderHistoryContainer.innerHTML = '';
+    }
 
     try {
         const ordersRef = collection(db, 'orders');
@@ -854,17 +925,28 @@ async function loadAvailableVendors() {
             querySnapshot.forEach((doc) => {
                 const vendor = doc.data();
                 const vendorId = doc.id;
-                if (!vendor.name) {
-                    console.warn(`Vendor with ID ${vendorId} is missing a name.`);
+                
+                // Skip vendors without essential data
+                if (!vendor.name || !vendor.phone) {
+                    console.warn(`Skipping vendor ${vendorId} due to missing essential data`);
+                    return;
                 }
+
                 const card = document.createElement('div');
-                card.className = 'bg-white dark:bg-neutral-800 rounded-lg shadow-md p-4 flex flex-col justify-between'; 
-                const rating = (Math.random() * (5 - 3.5) + 3.5).toFixed(1); 
+                card.className = 'bg-white dark:bg-neutral-800 rounded-lg shadow-md p-4 flex flex-col justify-between';
+                
+                // Calculate rating and completed orders with fallbacks
+                const rating = vendor.rating ? vendor.rating.toFixed(1) : (Math.random() * (5 - 3.5) + 3.5).toFixed(1);
                 const completedOrders = vendor.completedOrdersCount || 0;
+                
+                // Format location information
+                const locationInfo = vendor.location ? 
+                    `<p class="text-xs text-neutral-500 dark:text-neutral-400 italic">Location available</p>` : 
+                    `<p class="text-xs text-neutral-500 dark:text-neutral-400 italic">Location not available</p>`;
+                
                 card.innerHTML = `
                     <div class="flex items-center space-x-4 mb-3">
                         <div class="flex-shrink-0">
-                            <!-- Placeholder Avatar -->
                             <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-neutral-200 dark:bg-neutral-700">
                                 <svg class="h-6 w-6 text-neutral-500 dark:text-neutral-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -872,27 +954,26 @@ async function loadAvailableVendors() {
                             </span>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 truncate">${vendor.name || 'Unnamed Vendor'}</h3>
-                            <p class="text-sm text-neutral-600 dark:text-neutral-400 truncate">Phone: ${vendor.phone || 'N/A'}</p>
+                            <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 truncate">${vendor.name}</h3>
+                            <p class="text-sm text-neutral-600 dark:text-neutral-400 truncate">Phone: ${vendor.phone}</p>
                         </div>
                     </div>
                     <div class="mb-3 space-y-1">
                         <div class="flex items-center text-sm">
-                             <span class="text-yellow-500 mr-1">★</span> 
-                             <span class="font-medium text-neutral-700 dark:text-neutral-300">${rating}</span>
-                             <span class="text-neutral-500 dark:text-neutral-400 ml-2">(${completedOrders} orders completed)</span>
+                            <span class="text-yellow-500 mr-1">★</span>
+                            <span class="font-medium text-neutral-700 dark:text-neutral-300">${rating}</span>
+                            <span class="text-neutral-500 dark:text-neutral-400 ml-2">(${completedOrders} orders completed)</span>
                         </div>
-                         <!-- Maybe hide raw coords or show simplified text -->
-                         ${vendor.location ? '<p class="text-xs text-neutral-500 dark:text-neutral-400 italic">Location available</p>' : ''}
+                        ${locationInfo}
                     </div>
-                    <div class="mt-auto"> <!-- Push button to bottom -->
-                        <button data-vendor-id="${vendorId}" data-vendor-name="${vendor.name || 'this vendor'}" class="order-from-vendor-btn w-full py-2 px-4 rounded-md font-medium text-white transition duration-150 ease-in-out bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div class="mt-auto">
+                        <button data-vendor-id="${vendorId}" data-vendor-name="${vendor.name}" class="order-from-vendor-btn w-full py-2 px-4 rounded-md font-medium text-white transition duration-150 ease-in-out bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed">
                             Order Water
                         </button>
                     </div>
                 `;
+                
                 vendorsListDiv.appendChild(card);
-
             });
             addOrderFromVendorListeners(); // Add listeners after appending cards
         }
@@ -1288,7 +1369,9 @@ function initializeUI() {
 // --- Ensure setupAuthObserver is defined and called ---
 function setupAuthObserver() {
     onAuthStateChanged(auth, (user) => {
-        // ... (rest of setupAuthObserver implementation as it exists) ...
+        console.log("Auth state changed, user:", user ? "signed in" : "signed out");
+        
+        // Clean up any existing Firestore listener
         if (firestoreListenerUnsubscribe) {
             console.log("Unsubscribing from previous Firestore listener due to auth state change.");
             firestoreListenerUnsubscribe();
@@ -1297,11 +1380,22 @@ function setupAuthObserver() {
         retryCount = 0; 
 
         if (user) {
-            console.log("Auth state changed: User signed in", user.uid);
+            console.log("User signed in:", user.uid);
+            // Hide auth sections and show app sections
+            document.getElementById('appNavBar')?.classList.remove('hidden');
+            document.getElementById('appFooter')?.classList.remove('hidden');
+            
+            // Setup Firestore listener for the user
             setupFirestoreListener(user);
         } else {
-            console.log("Auth state changed: User signed out");
-            renderLoginView(); 
+            console.log("User signed out, showing login view");
+            // Hide app sections
+            document.getElementById('appNavBar')?.classList.add('hidden');
+            document.getElementById('appFooter')?.classList.add('hidden');
+            document.getElementById('userDashboard')?.classList.add('hidden');
+            
+            // Show login view
+            renderLoginView();
         }
     });
 }
@@ -1312,9 +1406,11 @@ try {
     initializeUI();
     setupNavigation();
     setupAuthObserver(); 
+    
+    // The login view will be shown by setupAuthObserver if the user is not signed in
     console.log("Initial setup calls completed.");
 } catch (error) {
-    console.error("Error during initial setup at script end:", error);
+    console.error("Error during initial setup:", error);
 }
 
 // <<< REMOVE any leftover window.onload or DOMContentLoaded listeners >>>
