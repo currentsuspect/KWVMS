@@ -79,3 +79,6 @@ node_modules/
 
 # Ignore built CSS output
 /dist/css/output.css
+
+# Ignore Cursor IDE settings
+.cursor/
