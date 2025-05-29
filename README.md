@@ -60,7 +60,7 @@ This system is designed for the KNEC Diploma in Information Technology project. 
 ### Steps
 1. **Clone the repository** (or download ZIP):
    ```powershell
-   git clone https://github.com/yourusername/KWVMS.git
+   git clone https://github.com/currentsuspect/KWVMS.git
    cd KWVMS
    ```
 2. **Install dependencies:**
