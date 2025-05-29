@@ -76,3 +76,6 @@ node_modules/
 # node_modules/
 # .env
 # *.log
+
+# Ignore built CSS output
+/dist/css/output.css

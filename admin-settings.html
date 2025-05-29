@@ -5,35 +5,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>System Settings - KWVMS Admin</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <!-- Inter font -->
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <script>
         // Configure Tailwind for class-based dark mode
         tailwind.config = {
-            darkMode: 'class'
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        // Primary colors - Water theme
+                        primary: {
+                            50: '#f0f9ff',  // Lightest blue
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9', // Base blue
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e', // Darkest blue
+                        },
+                        // Accent colors
+                        accent: {
+                            50: '#f0fdf4',  // Lightest green
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e', // Base green
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d', // Darkest green
+                        },
+                        // Warning colors
+                        warning: {
+                            50: '#fffbeb',  // Lightest amber
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b', // Base amber
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f', // Darkest amber
+                        },
+                        // Error colors
+                        error: {
+                            50: '#fef2f2',  // Lightest red
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444', // Base red
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d', // Darkest red
+                        },
+                        // Neutral colors for text and backgrounds
+                        neutral: {
+                            50: '#fafafa',  // Lightest gray
+                            100: '#f5f5f5',
+                            200: '#e5e5e5',
+                            300: '#d4d4d4',
+                            400: '#a3a3a3',
+                            500: '#737373', // Base gray
+                            600: '#525252',
+                            700: '#404040',
+                            800: '#262626',
+                            900: '#171717', // Darkest gray
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter var', 'system-ui', '-apple-system', 'sans-serif'],
+                    },
+                }
+            }
         }
     </script>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900">
+<body class="bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header with Back Link -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-neutral-300 dark:border-neutral-700">
+            <h1 class="text-2xl font-bold text-neutral-800 dark:text-neutral-100">System Settings</h1>
+            <div>
+                <button id="logoutButton" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-error-600 hover:bg-error-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500">
+                    Logout
+                </button>
+            </div>
+        </div>
 
-    <div class="container mx-auto px-4 py-8 max-w-2xl"> <!-- Limit width for settings page -->
-        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
-            <h1 class="text-2xl font-bold text-gray-800">System Settings</h1>
-            <a href="index.html" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                &larr; Back to Dashboard
-            </a>
+        <!-- Admin Navigation -->
+        <div class="mb-8 bg-white dark:bg-neutral-800 rounded-2xl shadow overflow-hidden">
+            <nav class="flex flex-wrap">
+                <a href="admin-users.html" class="px-6 py-3 text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                    Users
+                </a>
+                <a href="admin-vendors.html" class="px-6 py-3 text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                    Vendors
+                </a>
+                <a href="admin-orders.html" class="px-6 py-3 text-sm font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700/50">
+                    Orders
+                </a>
+                <a href="admin-settings.html" class="px-6 py-3 text-sm font-medium text-primary-600 dark:text-primary-400 border-b-2 border-primary-500 dark:border-primary-500">
+                    Settings
+                </a>
+            </nav>
         </div>
 
         <!-- Settings Form Card -->
-        <div class="bg-white p-6 rounded-lg shadow">
+        <div class="bg-white dark:bg-neutral-800 rounded-2xl shadow p-6">
             <form id="settings-form" class="space-y-6">
                 <div>
-                    <label for="price-per-liter" class="block text-sm font-medium text-gray-700">Water Price per Liter (KES)</label>
+                    <label for="price-per-liter" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Water Price per Liter (KES)</label>
                     <div class="mt-1 relative rounded-md shadow-sm">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 sm:text-sm"> KES </span>
+                            <span class="text-neutral-500 dark:text-neutral-400 sm:text-sm"> KES </span>
                         </div>
                         <input type="number" name="price-per-liter" id="price-per-liter" 
-                               class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-14 pr-12 sm:text-sm border-gray-300 rounded-md" 
+                               class="bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 focus:ring-primary-500 focus:border-primary-500 block w-full pl-14 pr-12 sm:text-sm border-neutral-300 dark:border-neutral-600 rounded-md" 
                                placeholder="0.00" step="0.01" min="0" required>
                     </div>
                 </div>
@@ -45,7 +146,7 @@
                 
                 <div>
                     <button type="submit" 
-                            class="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            class="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                         Save Settings
                     </button>
                 </div>
@@ -54,10 +155,8 @@
 
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50"></div>
     
     <!-- Custom Scripts -->
     <script src="js/firebase-config.js"></script>

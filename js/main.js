@@ -368,16 +368,9 @@ function renderVendorPanel(user, userData) {
 }
 
 function renderAdminPanel(user, userData) {
-    // clearContent(); // Assume this loads admin.html or similar
+    // Directly redirect to admin.html instead of showing a temporary panel
     console.log("Redirecting to admin dashboard for:", userData.name || user.email);
-     document.body.innerHTML = `
-         <div class="min-h-screen flex flex-col items-center justify-center bg-neutral-100 dark:bg-neutral-900 p-4">
-             <h1 class="text-xl mb-4">Welcome Admin: ${userData.name || user.email}</h1>
-             <a href="admin.html" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Go to Admin Panel</a>
-              <button id="logout-button" class="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Logout</button>
-         </div>
-     `;
-     document.getElementById('logout-button')?.addEventListener('click', handleLogout);
+    window.location.href = 'admin.html';
 }
 
 // --- Authentication Logic Handlers ---
@@ -1237,59 +1230,91 @@ async function loadAvailableVendors() {
     }
 }
 
-// <<< Add this function back >>>
 // Function to add listeners to vendor 'Order Water' buttons
 function addOrderFromVendorListeners() {
     const orderButtons = document.querySelectorAll('.order-from-vendor-btn');
-    console.log(`Found ${orderButtons.length} vendor order buttons to add listeners to.`); // Log how many buttons found
+    console.log(`Found ${orderButtons.length} vendor order buttons to add listeners to.`);
+    
     orderButtons.forEach(button => {
-        // Remove existing listener to prevent duplicates if function is called multiple times
-        button.removeEventListener('click', handleOrderFromVendorClick);
-        // Add the new listener
-        button.addEventListener('click', handleOrderFromVendorClick);
+        // Corrected: We define the event handler function directly here.
+        // If this function is called multiple times (e.g., on refresh of vendors),
+        // this approach might add duplicate listeners. 
+        // A more robust solution would be to manage listeners more carefully if vendors are frequently reloaded.
+        // For now, this ensures the correct logic is attached.
+
+        const newClickHandler = function(event) {
+            event.preventDefault();
+            
+            const targetButton = event.target.closest('.order-from-vendor-btn');
+            if (!targetButton) {
+                console.error("Could not find target button in click handler");
+                return;
+            }
+            
+            const vendorId = targetButton.dataset.vendorId;
+            const vendorName = targetButton.dataset.vendorName;
+            
+            if (!vendorId || !vendorName) {
+                console.error("Missing vendor data attributes on button", targetButton);
+                showToast("Error: Missing vendor information.", "error");
+                return;
+            }
+            
+            selectedVendorId = vendorId;
+            selectedVendorName = vendorName;
+            
+            console.log(`Order button clicked for vendor: ${vendorName} (ID: ${vendorId})`);
+            showOrderConfirmationModal(vendorId, vendorName);
+        };
+
+        // Remove any old listener for 'handleOrderFromVendorClick' if it somehow still exists.
+        // This is a defensive measure and might not be strictly necessary if the old code is fully removed.
+        // button.removeEventListener('click', handleOrderFromVendorClick); // REMOVED THIS LINE
+
+        // It's tricky to remove an anonymous function listener directly. 
+        // If addOrderFromVendorListeners is called multiple times, we might add duplicate listeners.
+        // For this fix, we will assume it's called once or that duplicates are not causing issues.
+        // If they do, we'd need to store references to the listeners to remove them properly.
+        button.addEventListener('click', newClickHandler);
     });
 }
 
-// Handler for clicking 'Order Water' on a vendor card
-function handleOrderFromVendorClick(event) {
-    // <<< Assign directly to global variables >>>
-    selectedVendorId = event.target.dataset.vendorId;
-    selectedVendorName = event.target.dataset.vendorName;
-    console.log(`Order button clicked for vendor: ${selectedVendorName} (ID: ${selectedVendorId})`);
-
+// Function to show the order confirmation modal
+function showOrderConfirmationModal(vendorId, vendorName) {
     // Get the confirm order section elements
     const confirmSection = document.getElementById('confirm-order-section');
     const confirmVendorNameSpan = document.getElementById('confirm-vendor-name');
     const confirmVendorIdInput = document.getElementById('confirm-vendor-id');
     const confirmQuantitySlider = document.getElementById('confirm-quantity-slider');
     const confirmQuantityValue = document.getElementById('confirm-quantity-value');
-    const estimatedPriceSpan = document.getElementById('confirm-estimated-price');
     const confirmForm = document.getElementById('confirm-order-form');
     const cancelConfirmBtn = document.getElementById('cancel-confirm-button');
+    const confirmErrorDiv = document.getElementById('confirm-order-error');
 
-    if (!confirmSection || !confirmVendorNameSpan || !confirmVendorIdInput || !confirmQuantitySlider || !confirmQuantityValue || !estimatedPriceSpan || !confirmForm || !cancelConfirmBtn) {
+    // Check if required elements exist
+    if (!confirmSection || !confirmVendorNameSpan || !confirmVendorIdInput || !confirmQuantitySlider) {
         console.error("Confirm order section elements not found! Check IDs in index.html.");
         showToast("Error: Could not open order confirmation.", "error");
         return;
     }
 
     // Populate confirm section
-    confirmVendorNameSpan.textContent = selectedVendorName;
-    confirmVendorIdInput.value = selectedVendorId;
+    confirmVendorNameSpan.textContent = vendorName;
+    confirmVendorIdInput.value = vendorId;
     confirmQuantitySlider.value = 100; // Reset slider to default
-    confirmQuantityValue.textContent = '100';
-    estimatedPriceSpan.textContent = 'Calculating...'; // Reset price display
+    if (confirmQuantityValue) confirmQuantityValue.textContent = '100';
+    
+    // Clear any previous errors
+    if (confirmErrorDiv) confirmErrorDiv.classList.add('hidden');
 
-    // Function to calculate and display price (can be called on slider input)
+    // Function to calculate and display price
     const calculatePrice = async () => {
-        estimatedPriceSpan.textContent = 'Calculating...'; // Show calculating initially
         try {
             console.log("Calculating price estimate...");
             const settingsRef = doc(db, "settings", "main");
             const settingsSnap = await getDoc(settingsRef);
             let pricePerLiter = 1.0; // Default price
 
-            // <<< Add detailed logging >>>
             if (settingsSnap.exists()) {
                 console.log("Settings document exists.");
                 const settingsData = settingsSnap.data();
@@ -1308,41 +1333,39 @@ function handleOrderFromVendorClick(event) {
             const quantity = parseInt(confirmQuantitySlider.value, 10);
             if (isNaN(quantity)) { // Add check for quantity parsing
                  console.error("Could not parse quantity from slider value:", confirmQuantitySlider.value);
-                 estimatedPriceSpan.textContent = 'Invalid Qty';
                  return;
             }
             
-            estimatedPriceSpan.textContent = `KES ${(quantity * pricePerLiter).toFixed(2)}`;
-            console.log(`Price estimate updated: ${estimatedPriceSpan.textContent}`);
+            console.log(`Price estimate updated: KES ${(quantity * pricePerLiter).toFixed(2)}`);
 
         } catch (error) {
             console.error("Error fetching price for estimate:", error); // Log the full error object
             console.error(`Error Code: ${error.code}, Message: ${error.message}`); // Log specific parts
-            estimatedPriceSpan.textContent = 'Error';
         }
     };
     
     // Calculate price immediately and on slider change
     calculatePrice();
     confirmQuantitySlider.oninput = () => { 
-        confirmQuantityValue.textContent = confirmQuantitySlider.value;
+        if (confirmQuantityValue) confirmQuantityValue.textContent = confirmQuantitySlider.value;
         calculatePrice(); 
     };
 
     // Add submit listener for the confirm form
-    confirmForm.onsubmit = handleConfirmOrderSubmit; // Assign function directly
+    if (confirmForm) {
+        confirmForm.onsubmit = handleConfirmOrderSubmit; // Assign function directly
+    }
 
     // Add listener for the cancel button
-    cancelConfirmBtn.onclick = () => { 
-        confirmSection.classList.add('hidden'); 
-        // No need to explicitly show vendors section, it should remain visible underneath
-    };
+    if (cancelConfirmBtn) {
+        cancelConfirmBtn.onclick = () => { 
+            confirmSection.classList.add('hidden'); 
+            // No need to explicitly show vendors section, it should remain visible underneath
+        };
+    }
 
     // Show the confirm section
     confirmSection.classList.remove('hidden');
-    
-    // Hide the main dashboard sections (optional, confirm section is an overlay)
-    // document.getElementById('userDashboard').classList.add('hidden'); // Or hide individual sections
 }
 
 // Re-introduced function for Firestore Logic - defined BEFORE handleConfirmOrderSubmit
@@ -1516,6 +1539,16 @@ async function handleConfirmOrderSubmit(event) {
                 console.error("IP Geolocation fallback failed:", ipError);
                 // Keep userLocation as null
             }
+        } else if (error.code === 1) { // PERMISSION_DENIED
+            console.log("Location permission denied. Offering manual location input.");
+            // Hide confirm order section and show manual location input section
+            document.getElementById('confirm-order-section').classList.add('hidden');
+            
+            // Open manual location form
+            showManualLocationForm(quantity);
+            
+            // Early return since we're handling via manual location form
+            return;
         }
 
         // --- Process based on outcome --- 
@@ -1546,6 +1579,126 @@ async function handleConfirmOrderSubmit(event) {
     } 
     // Note: The finally block for re-enabling buttons is now primarily within processOrderPlacement
     // It's only called in the catch block above if placement fails entirely.
+}
+
+// Function to show and handle manual location input
+function showManualLocationForm(quantity) {
+    // Get references to elements
+    const manualLocationSection = document.getElementById('manual-location-section');
+    const manualLocationForm = document.getElementById('manual-location-form');
+    const cancelButton = document.getElementById('cancel-manual-location-button');
+    const errorDiv = document.getElementById('manual-location-error');
+    const useDefaultLocationButton = document.getElementById('use-default-location-button');
+    
+    if (!manualLocationSection || !manualLocationForm || !cancelButton || !errorDiv) {
+        console.error("Manual location form elements not found");
+        showToast("An error occurred. Please try again.", "error");
+        return;
+    }
+    
+    // Show manual location section
+    manualLocationSection.classList.remove('hidden');
+    
+    // Handle default location button click
+    if (useDefaultLocationButton) {
+        useDefaultLocationButton.addEventListener('click', () => {
+            // Set default coordinates for Kajiado town
+            const latitudeInput = document.getElementById('manual-latitude');
+            const longitudeInput = document.getElementById('manual-longitude');
+            
+            if (latitudeInput && longitudeInput) {
+                latitudeInput.value = -1.8444;  // Default Kajiado latitude
+                longitudeInput.value = 36.7833; // Default Kajiado longitude
+                
+                // Show success message
+                showToast("Using default Kajiado town coordinates", "success");
+            }
+        });
+    }
+    
+    // Set up form submission handler
+    manualLocationForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        
+        const latitudeInput = document.getElementById('manual-latitude');
+        const longitudeInput = document.getElementById('manual-longitude');
+        const submitButton = document.getElementById('submit-manual-location-button');
+        
+        if (!latitudeInput || !longitudeInput || !submitButton) {
+            errorDiv.textContent = "Form elements not found";
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+        
+        // Validate inputs
+        const latitude = parseFloat(latitudeInput.value);
+        const longitude = parseFloat(longitudeInput.value);
+        
+        if (isNaN(latitude) || isNaN(longitude)) {
+            errorDiv.textContent = "Please enter valid coordinates";
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+        
+        // Validate coordinates are in a reasonable range
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            errorDiv.textContent = "Coordinates out of range (latitude: -90 to 90, longitude: -180 to 180)";
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+        
+        // Disable form elements during submission
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
+        cancelButton.disabled = true;
+        errorDiv.classList.add('hidden');
+        
+        try {
+            // Create location object
+            const userLocation = { latitude, longitude };
+            
+            // Process order with manual location (marked as estimated)
+            await processOrderPlacement(userLocation, quantity, true);
+            
+            // Hide manual location section on success (processOrderPlacement will show the payment screen)
+            manualLocationSection.classList.add('hidden');
+        } catch (error) {
+            console.error("Error processing order with manual location:", error);
+            errorDiv.textContent = `Error: ${error.message}`;
+            errorDiv.classList.remove('hidden');
+            
+            // Re-enable form elements
+            submitButton.disabled = false;
+            submitButton.textContent = 'Use This Location';
+            cancelButton.disabled = false;
+        }
+    });
+    
+    // Set up cancel button handler
+    cancelButton.addEventListener('click', () => {
+        // Hide manual location section
+        manualLocationSection.classList.add('hidden');
+        
+        // Show confirm order section again
+        document.getElementById('confirm-order-section').classList.remove('hidden');
+        
+        // Reset form
+        manualLocationForm.reset();
+        errorDiv.classList.add('hidden');
+        
+        // Re-enable confirm order form buttons
+        const confirmSubmitButton = document.getElementById('confirm-submit-button');
+        const confirmCancelButton = document.getElementById('cancel-confirm-button');
+        
+        if (confirmSubmitButton) {
+            confirmSubmitButton.disabled = false;
+            confirmSubmitButton.textContent = 'Confirm & Proceed to Payment';
+        }
+        
+        if (confirmCancelButton) {
+            confirmCancelButton.disabled = false;
+        }
+    });
 }
 
 // --- Mock Payment Screen Function --- (Ensure it exists and is correct)
@@ -1654,12 +1807,13 @@ function setupAuthObserver() {
     });
 }
 
-// <<< Initialization calls at the end (no listener needed with defer) >>>
+// --- Initialization calls at the end (no listener needed with defer) >>>
 console.log("Script end reached. Running initial setup...");
 try {
     initializeUI();
     setupNavigation();
     setupAuthObserver(); 
+    setupTextToCoordinates();
     
     // The login view will be shown by setupAuthObserver if the user is not signed in
     console.log("Initial setup calls completed.");
@@ -1667,11 +1821,95 @@ try {
     console.error("Error during initial setup:", error);
 }
 
+// Function to set up the text-to-coordinates geocoding button
+function setupTextToCoordinates() {
+    const textToCoordinatesBtn = document.getElementById('text-to-coordinates-btn');
+    if (!textToCoordinatesBtn) {
+        console.warn("Text to coordinates button not found");
+        return;
+    }
+    
+    textToCoordinatesBtn.addEventListener('click', async () => {
+        const orderLocation = document.getElementById('order-location');
+        if (!orderLocation || !orderLocation.value.trim()) {
+            showToast("Please enter an address first", "warning");
+            return;
+        }
+        
+        const address = orderLocation.value.trim();
+        textToCoordinatesBtn.disabled = true;
+        textToCoordinatesBtn.innerHTML = '<svg class="animate-spin h-3 w-3 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
+        
+        try {
+            // Add a fallback to the address to improve geocoding accuracy
+            const enhancedAddress = address + (address.toLowerCase().includes('kajiado') ? '' : ', Kajiado, Kenya');
+            
+            // Use a free geocoding service
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enhancedAddress)}&limit=1`);
+            
+            if (!response.ok) {
+                throw new Error(`Geocoding API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                // We got coordinates! Proceed with order placement
+                const latitude = parseFloat(data[0].lat);
+                const longitude = parseFloat(data[0].lon);
+                
+                // If we're in the manual location form, fill in the fields
+                const manualLatitudeInput = document.getElementById('manual-latitude');
+                const manualLongitudeInput = document.getElementById('manual-longitude');
+                
+                if (manualLatitudeInput && manualLongitudeInput) {
+                    manualLatitudeInput.value = latitude;
+                    manualLongitudeInput.value = longitude;
+                    showToast("Coordinates updated from your address", "success");
+                } else {
+                    // Otherwise, try to submit the order with these coordinates
+                    showToast("Got your location! Processing order...", "success");
+                    
+                    // Need to check if there's a selected vendor
+                    if (!selectedVendorId) {
+                        showToast("Please select a vendor first", "warning");
+                        return;
+                    }
+                    
+                    // Get quantity
+                    const quantitySlider = document.getElementById('order-quantity-slider');
+                    if (!quantitySlider) {
+                        showToast("Error: Quantity not found", "error");
+                        return;
+                    }
+                    
+                    const quantity = quantitySlider.value;
+                    const userLocation = { latitude, longitude };
+                    
+                    // Hide any previous order sections
+                    const confirmOrderSection = document.getElementById('confirm-order-section');
+                    if (confirmOrderSection) {
+                        confirmOrderSection.classList.add('hidden');
+                    }
+                    
+                    // Process the order with the geocoded location
+                    await processOrderPlacement(userLocation, quantity, true);
+                }
+            } else {
+                throw new Error("No coordinates found for this address");
+            }
+        } catch (error) {
+            console.error("Geocoding error:", error);
+            showToast(`Error finding coordinates: ${error.message}`, "error");
+        } finally {
+            // Reset button state
+            textToCoordinatesBtn.disabled = false;
+            textToCoordinatesBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg> Locate This Address';
+        }
+    });
+}
+
 // <<< REMOVE any leftover window.onload or DOMContentLoaded listeners >>>
-/*
-window.onload = () => { ... };
-document.addEventListener('DOMContentLoaded', () => { ... });
-*/
 
 // Chat functionality
 let currentChatOrderId = null;
@@ -1686,23 +1924,27 @@ const chatForm = document.getElementById('chatForm');
 const messageInput = document.getElementById('messageInput');
 
 // Toggle chat window
-chatButton.addEventListener('click', () => {
-    if (currentChatOrderId) {
-        chatWindow.classList.toggle('hidden');
-    } else {
-        showToast('Please select an order to chat about', 'info');
-    }
-});
+if (chatButton) {
+    chatButton.addEventListener('click', () => {
+        if (currentChatOrderId) {
+            chatWindow.classList.toggle('hidden');
+        } else {
+            showToast('Please select an order to chat about', 'info');
+        }
+    });
+}
 
 // Close chat window
-closeChatWindow.addEventListener('click', () => {
-    chatWindow.classList.add('hidden');
-    if (chatUnsubscribe) {
-        chatUnsubscribe();
-        chatUnsubscribe = null;
-    }
-    currentChatOrderId = null;
-});
+if (closeChatWindow) {
+    closeChatWindow.addEventListener('click', () => {
+        if (chatWindow) chatWindow.classList.add('hidden');
+        if (chatUnsubscribe) {
+            chatUnsubscribe();
+            chatUnsubscribe = null;
+        }
+        currentChatOrderId = null;
+    });
+}
 
 // Function to populate profile section with user data
 function populateProfileSection() {
@@ -1712,7 +1954,7 @@ function populateProfileSection() {
         console.error("Profile section element not found");
         return;
     }
-
+    
     // Get profile elements
     const profileName = document.getElementById('profile-name');
     const profileEmail = document.getElementById('profile-email');

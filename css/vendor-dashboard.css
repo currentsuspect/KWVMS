@@ -1,0 +1,11 @@
+/* Add animations for order cards */
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.animate-fadeOut {
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+/* Add this to your existing styles */ 

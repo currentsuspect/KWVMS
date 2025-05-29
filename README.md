@@ -1,80 +1,110 @@
 # Kajiado Water Vending Management System (KWVMS)
 
-A web-based platform designed to facilitate water delivery in Kajiado using vendors who transport water via donkeys. The system connects users (buyers) who need water, vendors (donkey water carriers) who deliver it, and an admin who manages orders, users, and vendors.
+A web-based platform to facilitate water delivery in Kajiado County using vendors who transport water via donkeys. The system connects users (buyers), vendors (donkey water carriers), and an admin for efficient order management.
 
-## Features
+---
 
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Key Features](#key-features)
+- [Technology Stack](#technology-stack)
+- [Installation & Setup (Windows)](#installation--setup-windows)
+- [Usage Guide](#usage-guide)
+- [Deployment](#deployment)
+- [Troubleshooting & Support](#troubleshooting--support)
+- [License](#license)
+
+---
+
+## Project Overview
+This system is designed for the KNEC Diploma in Information Technology project. It streamlines water delivery in Kajiado by connecting buyers, vendors, and administrators on a single platform. The system is optimized for mobile and low-end devices, supports both English and Swahili, and features a minimalist, user-friendly interface.
+
+## Key Features
 ### Admin Panel
-- Dashboard with analytics (e.g., total orders, active vendors, revenue)
+- Dashboard with analytics (orders, vendors, revenue)
 - Manage users (add, edit, delete, suspend)
 - Manage vendors (approve, track performance)
 - Set water pricing per liter
 - Monitor delivery status
-- View customer complaints and resolve issues
+- View and resolve customer complaints
 
-### User Main Area
-- Create an account and log in
-- Order water by specifying location and quantity (e.g., 50L, 100L, etc.)
-- Track vendor arrival status (estimated time based on distance)
+### User Area
+- Account creation and login
+- Order water (specify location and quantity)
+- Track vendor arrival (with estimated time)
 - View order history
-- Contact vendor via chat
+- Chat with vendors
 - Rate and review vendors
 
 ### Vendor Panel
-- Register as a vendor and get admin approval
-- Accept or decline orders
+- Register and await admin approval
+- Accept/decline orders
 - View assigned deliveries on a map
-- Mark deliveries as "In Progress" and "Completed"
-- Earnings tracking (commission-based or fixed pricing)
+- Mark deliveries as "In Progress" or "Completed"
+- Track earnings
 - Chat with customers
 
 ## Technology Stack
 - **Frontend:** HTML, CSS, JavaScript (Vanilla JS)
-- **Backend:** Firebase
+- **Backend:** Firebase (Firestore, Authentication, Hosting)
 - **Database:** Firestore
-- **Authentication:** Firebase Authentication
-- **Hosting:** Firebase Hosting
+- **Styling:** Tailwind CSS
 
-## Installation and Setup
-1. Clone the repository: `git clone https://github.com/yourusername/KWVMS.git`
-2. Navigate to the project directory: `cd KWVMS`
-3. Install dependencies: `npm install`
-4. Configure Firebase:
-   - Create a new Firebase project at [https://console.firebase.google.com/](https://console.firebase.google.com/)
-   - Enable Authentication and Firestore
-   - Add your Firebase configuration to `js/firebase-config.js`
-5. Deploy Firestore rules: `firebase deploy --only firestore:rules`
-6. Start the development server: `npm start`
+## Installation & Setup (Windows)
 
-## Usage
-1. **Admin:**
-   - Log in with admin credentials
-   - Access the admin dashboard to manage users, vendors, and orders
-   - Set water pricing and monitor system performance
+### Prerequisites
+- [Node.js & npm](https://nodejs.org/) (LTS recommended)
+- [Firebase CLI](https://firebase.google.com/docs/cli)
+- Git (optional, for cloning)
 
-2. **User:**
-   - Create an account and log in
-   - Place an order by specifying location and quantity
-   - Track order status and chat with the assigned vendor
-   - Rate and review vendors after delivery
+### Steps
+1. **Clone the repository** (or download ZIP):
+   ```powershell
+   git clone https://github.com/yourusername/KWVMS.git
+   cd KWVMS
+   ```
+2. **Install dependencies:**
+   ```powershell
+   npm install
+   ```
+3. **Set up Firebase:**
+   - Go to [Firebase Console](https://console.firebase.google.com/) and create a new project.
+   - Enable **Authentication** and **Firestore**.
+   - Copy your Firebase config and paste it into `js/firebase-config.js` (replace the placeholder values).
+4. **Deploy Firestore rules and indexes:**
+   ```powershell
+   firebase deploy --only firestore:rules,firestore:indexes
+   ```
+5. **Build Tailwind CSS:**
+   ```powershell
+   npm run build
+   ```
+6. **Start a local server (optional for testing):**
+   You can use the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension in VS Code, or run:
+   ```powershell
+   npx serve .
+   ```
 
-3. **Vendor:**
-   - Register as a vendor and wait for admin approval
-   - Log in to the vendor dashboard
-   - View available orders and accept those within your delivery radius
-   - Update order status (In Progress, Completed)
-   - Chat with customers and track earnings
+## Usage Guide
+- **Admin:** Log in, manage users/vendors/orders, set pricing, resolve complaints.
+- **User:** Register/login, order water, track delivery, chat, rate vendors.
+- **Vendor:** Register, await approval, accept/complete orders, chat, track earnings.
 
 ## Deployment
-1. Build the project: `npm run build`
-2. Deploy to Firebase: `firebase deploy`
+1. **Build the project:**
+   ```powershell
+   npm run build
+   ```
+2. **Deploy to Firebase Hosting:**
+   ```powershell
+   firebase deploy
+   ```
 
-## Contributing
-1. Fork the repository
-2. Create a new branch: `git checkout -b feature/your-feature-name`
-3. Make your changes and commit them: `git commit -m 'Add some feature'`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Submit a pull request
+## Troubleshooting & Support
+- If you encounter permission errors, ensure your Firestore rules are deployed and correct.
+- For missing indexes, follow the Firebase Console prompts or deploy with the command above.
+- For any issues, check the browser console for error messages.
+- For further help, consult the included `FIXES.md`, `ORDER_CONFIRMATION_FIX.md`, `VENDOR_FIXES.md`, and `LOCATION_FIXES.md` files for solutions to common problems.
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is intended for educational use (KNEC Diploma in IT). If you require a formal license, create a `LICENSE` file (MIT or as required by your institution).

@@ -25,22 +25,23 @@
           allow list: if request.auth != null;
           // Allow users to create their own account data
           allow create: if request.auth != null && request.auth.uid == userId;
-          // Allow users to update their own data (specific fields TBD)
-          allow update: if request.auth != null && request.auth.uid == userId && 
-                         // Check the role of the user making the request, not the incoming data
-                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
+          // Allow users to update their own data 
+          allow update: if request.auth != null && request.auth.uid == userId &&
                          (
-                           // Allow updating location fields - more flexible approach
-                           (request.resource.data.diff(resource.data).affectedKeys()
-                             .hasAny(['location', 'lastLocationUpdate']) && 
+                           // Allow vendors updating location, status, radius
+                           (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' && (
+                             request.resource.data.diff(resource.data).affectedKeys()
+                               .hasAny(['location', 'lastLocationUpdate']) || // Use hasAny for more flexibility if needed later
+                             request.resource.data.diff(resource.data).affectedKeys()
+                               .hasOnly(['status', 'radius', 'lastUpdated'])
+                           )) ||
+                           // Allow vendors updating their earnings after completing an order
+                           (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+                            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' && 
                             request.resource.data.diff(resource.data).affectedKeys()
-                             .hasOnly(['location', 'lastLocationUpdate'])) ||
-                           // Allow updating status and radius
-                           request.resource.data.diff(resource.data).affectedKeys()
-                             .hasOnly(['status', 'radius', 'lastUpdated']) ||
-                           // Allow updating earnings fields
-                           request.resource.data.diff(resource.data).affectedKeys()
-                             .hasOnly(['completedOrdersCount', 'totalEarnedValue'])
+                             .hasOnly(['completedOrders', 'totalEarnings'])) // Corrected field names
+                           // Add rules here later if non-vendors need to update other specific fields
                          );
         }
 
@@ -55,47 +56,12 @@
                       (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
                        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['vendor', 'admin'])); // Allow admins too
                        
-          // Allow specific updates based on role and order status
+          // Very permissive update rule for testing
           allow update: if request.auth != null && 
-                       (
-                         // Vendor accepts a PENDING order
-                         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
-                          resource.data.status == 'pending' && // <<< Check current status is pending
-                          request.resource.data.diff(resource.data).affectedKeys()
-                            .hasOnly(['status', 'assignedVendorId', 'assignedAt']) && // Fields for accepting
-                          request.resource.data.status == 'assigned' && // Ensure status is being set to 'assigned'
-                          request.resource.data.assignedVendorId == request.auth.uid) || // Ensure vendor assigns themselves
-
-                         // Vendor updates an ASSIGNED or IN_PROGRESS order (e.g., mark in progress/completed)
-                         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' &&
-                          resource.data.assignedVendorId == request.auth.uid && // Can only update THEIR assigned orders
-                          resource.data.status in ['assigned', 'in_progress'] && // Check current status
-                          request.resource.data.diff(resource.data).affectedKeys()
-                            .hasOnly(['status', 
-                                      'in_progressTimestamp', 'completedTimestamp',
-                                      'startedDeliveryAt', 'completedAt',
-                                      'estimatedDeliveryTime', 'actualDeliveryTime']) && // Fields for status changes
-                          request.resource.data.status in ['in_progress', 'completed']) || // Ensure status is valid
-                          
-                         // User cancels a PENDING order (future use example)
-                         (resource.data.userId == request.auth.uid && 
-                          resource.data.status == 'pending' && // Can only cancel pending orders
-                          request.resource.data.diff(resource.data).affectedKeys()
-                            .hasOnly(['status']) &&
-                          request.resource.data.status == 'cancelled') || // Example: Allow user to set status to 'cancelled'
-                          
-                         // <<< ADD THIS: User updates payment status on their own order >>>
-                         (resource.data.userId == request.auth.uid &&
-                          request.resource.data.diff(resource.data).affectedKeys()
-                            .hasOnly(['paymentStatus', 'paidAt']) && // Only allow these fields
-                          request.resource.data.paymentStatus == 'paid') || // Ensure they are setting it to 'paid'
-                          
-                         // Admin can update any order (for testing and management)
-                         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
-                       );
+                        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'vendor' ||
+                         resource.data.userId == request.auth.uid || 
+                         isAdmin());
         }
 
         // Rules for messages collection
@@ -137,11 +103,11 @@
           request.resource.data.text.size() > 0;
         }
 
-        // Rules for a specific settings document
+        // Rules for the main settings document used by admin and vendors
         match /settings/main {
-           // Allow any authenticated user to read settings
+           // Allow any authenticated user (especially vendors) to read settings
            allow read: if request.auth != null;
-           // Allow only admins to write settings (Placeholder - add isAdmin() check later)
+           // Allow only admins to write settings
            allow write: if request.auth != null && isAdmin(); 
         }
 

@@ -1,16 +1,30 @@
 {
   "indexes": [
     {
-      "collectionGroup": "messages",
+      "collectionGroup": "orders",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "orderId",
+          "fieldPath": "assignedVendorId",
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "timestamp",
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
           "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
         }
       ]
     }

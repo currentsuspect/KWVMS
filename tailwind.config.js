@@ -84,6 +84,25 @@ module.exports = {
       fontFamily: {
         sans: ['Inter var', 'system-ui', '-apple-system', 'sans-serif'],
       },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateX(100%)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' }
+        },
+        'fade-out': {
+          '0%': { opacity: '1', transform: 'translateX(0)' },
+          '100%': { opacity: '0', transform: 'translateX(100%)' }
+        },
+        'spin': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
+        }
+      },
+      animation: {
+        'fade-in': 'fade-in 0.3s ease-out forwards',
+        'fade-out': 'fade-out 0.3s ease-in forwards',
+        'spin': 'spin 1s linear infinite'
+      },
     }
   },
   plugins: [],

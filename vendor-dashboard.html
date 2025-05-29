@@ -177,16 +177,24 @@
             </div>
 
             <!-- My Orders Section -->
-            <div id="my-orders-section" class="dashboard-section hidden">
-                 <div class="flex justify-between items-center pb-2 mb-4 border-b border-neutral-300 dark:border-neutral-700">
-                    <h1 class="text-2xl font-semibold text-neutral-800 dark:text-neutral-100">My Orders</h1>
-                    <!-- Add refresh or filter buttons if needed -->
+            <section id="my-orders-section" class="dashboard-section hidden">
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-neutral-800 dark:text-neutral-100">My Orders</h2>
+                        <button id="refreshMyOrders" class="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                    <p class="text-neutral-600 dark:text-neutral-400 mb-4">View and manage your assigned deliveries.</p>
                 </div>
-                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="myOrdersList">
-                    <!-- My orders will be dynamically inserted here -->
-                     <p class="text-neutral-500 dark:text-neutral-400 md:col-span-2 lg:col-span-3">Loading your orders...</p> <!-- Placeholder -->
+                
+                <div id="myOrdersList" class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    <p class="text-neutral-500 dark:text-neutral-400 md:col-span-2 lg:col-span-3">Loading your orders...</p>
                 </div>
-            </div>
+            </section>
 
             <!-- Profile Section -->
             <div id="profile-section" class="dashboard-section hidden">
@@ -239,6 +247,24 @@
                          <p class="text-neutral-500 dark:text-neutral-400 text-sm">Detailed earnings history will appear here.</p>
                     </div>
                 </div>
+
+                <!-- Mock Withdrawal Section -->
+                <div class="mt-8 bg-white dark:bg-neutral-800 p-6 rounded-lg shadow">
+                    <h5 class="text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4">Request Withdrawal</h5>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="withdrawalAmount" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Amount to Withdraw (KES)</label>
+                            <input type="number" id="withdrawalAmount" name="withdrawalAmount" min="1" 
+                                   class="mt-1 block w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
+                                   placeholder="e.g., 500">
+                        </div>
+                        <button id="requestWithdrawalBtn" class="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            Request Withdrawal (Mock)
+                        </button>
+                        <p id="withdrawalMessage" class="text-sm text-neutral-500 dark:text-neutral-400 mt-2"></p>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Order Template (hidden) -->

@@ -7,6 +7,27 @@ const db = firebase.firestore();
 
 // DOM Elements
 const userListContainer = document.getElementById('userListContainer');
+const logoutButton = document.getElementById('logoutButton');
+
+// Add logout button handler
+if (logoutButton) {
+    logoutButton.addEventListener('click', handleLogout);
+}
+
+// Handle logout 
+async function handleLogout() {
+    try {
+        await auth.signOut();
+        console.log("User signed out successfully");
+        showToast("Logged out successfully!", "success");
+        
+        // Redirect immediately to index page
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error("Error signing out:", error);
+        showToast("Error signing out. Please try again.", "error");
+    }
+}
 
 // --- Authentication and Authorization Check ---
 document.addEventListener('DOMContentLoaded', () => {

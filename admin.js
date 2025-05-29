@@ -21,6 +21,7 @@ const activeVendorsElement = document.getElementById('activeVendors');
 const pendingOrdersElement = document.getElementById('pendingOrders');
 const totalRevenueElement = document.getElementById('totalRevenue');
 const recentActivityElement = document.getElementById('recentActivity');
+const logoutButton = document.getElementById('logoutButton');
 
 // Check authentication state
 auth.onAuthStateChanged(async (user) => {
@@ -273,5 +274,25 @@ function showToast(message, type = 'info') {
         window.showToast(message, type);
     } else {
         console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+}
+
+// Add event listener for logout button
+if (logoutButton) {
+    logoutButton.addEventListener('click', handleLogout);
+}
+
+// Handle logout 
+async function handleLogout() {
+    try {
+        await auth.signOut();
+        console.log("User signed out successfully");
+        showToast("Logged out successfully!", "success");
+        
+        // Redirect immediately and let the auth state listener handle the redirection
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error("Error signing out:", error);
+        showToast("Error signing out. Please try again.", "error");
     }
 } 
